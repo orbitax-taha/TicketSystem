@@ -190,7 +190,6 @@
 // };
 
 // export default TicketTable;
-
 import React, { useState, useEffect } from 'react';
 import TicketDetails from './TicketDetails';
 
@@ -199,28 +198,26 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [filterStatus, setFilterStatus] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedTicket, setSelectedTicket] = useState(null);
   const rowsPerPage = 10;
 
   useEffect(() => {
-    // Ensure tickets is an array before proceeding
     const validTickets = Array.isArray(tickets) ? tickets : [];
     let updatedTickets = [...validTickets];
-    if (filterStatus !== 'all') {
-      updatedTickets = updatedTickets.filter(ticket => ticket.status === filterStatus);
-    }
 
     // Apply search filter
-    if (searchTerm.trim() !== '') {
-      const searchLower = searchTerm.toLowerCase();
-      updatedTickets = updatedTickets.filter(ticket => {
-        // Safely convert all ticket fields to strings and search
-        return Object.values(ticket).some(value => {
-          if (value === null || value === undefined) return false;
-          return value.toString().toLowerCase().includes(searchLower);
-        });
-      });
+    if (searchQuery) {
+      updatedTickets = updatedTickets.filter(
+        ticket =>
+          ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          ticket.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (filterStatus !== 'all') {
+      updatedTickets = updatedTickets.filter(ticket => ticket.status === filterStatus);
     }
 
     // Apply sorting
@@ -235,8 +232,8 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
     }
 
     setFilteredTickets(updatedTickets);
-    setCurrentPage(1); // Reset to first page on filter or search change
-  }, [tickets, filterStatus, searchTerm, sortConfig]);
+    setCurrentPage(1);
+  }, [tickets, filterStatus, sortConfig, searchQuery]);
 
   const handleSort = (key) => {
     setSortConfig({
@@ -283,30 +280,13 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
     color: '#172b4d'
   };
 
-  const searchContainerStyle = {
-    position: 'relative',
-    display: 'inline-block'
-  };
-
-  const searchInputStyle = {
-    padding: '8px 8px 8px 28px',
+  const inputStyle = {
+    padding: '8px',
     border: '1px solid #dfe1e6',
     borderRadius: '4px',
     fontSize: '14px',
-    fontWeight: 'bold',
     color: '#172b4d',
-    width: '200px',
-    transition: 'border-color 0.2s, box-shadow 0.2s'
-  };
-
-  const searchIconStyle = {
-    position: 'absolute',
-    left: '8px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: '16px',
-    height: '16px',
-    color: '#5e6c84'
+    width: '200px'
   };
 
   const tableContainerStyle = {
@@ -333,13 +313,13 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
   };
 
   const headerCellStyle = {
-    backgroundColor: '#0052cc',
+    backgroundColor: '#fafbfc',
     border: '1px solid #dfe1e6',
     padding: '8px',
     whiteSpace: 'nowrap',
     textAlign: 'center',
     fontWeight: 'bold',
-    color: 'white',
+    color: '#172b4d',
     cursor: 'pointer'
   };
 
@@ -356,8 +336,15 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', marginTop: '60px', marginLeft: '250px' }}>
       <div style={headerStyle}>PROJECTS / ITSM Service Desk / My Tickets</div>
-
       <div style={filterRowStyle}>
+        <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#172b4d' }}>Search:</label>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by title or description"
+          style={inputStyle}
+        />
         <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#172b4d' }}>Filter by Status:</label>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={selectStyle}>
           <option value="all">All</option>
@@ -366,31 +353,12 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
           <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
           <option value="UNDER REVIEW">UNDER REVIEW</option>
         </select>
-        <div style={searchContainerStyle}>
-          <input
-            type="text"
-            placeholder="Search tickets..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={searchInputStyle}
-          />
-          <svg
-            style={searchIconStyle}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </div>
       </div>
       <div style={tableContainerStyle}>
         <table style={tableStyle}>
           <thead>
             <tr style={{ backgroundColor: '#f4f5f7' }}>
-              {['Type', 'Title', 'Description', 'Assigned To', 'Status','Created At','Key', ].map((header, idx) => (
+              {['Type', 'Title', 'Description', 'Assigned To', 'Status', 'Created At', 'Key'].map((header, idx) => (
                 <th key={idx} style={headerCellStyle} onClick={() => handleSort(header.toLowerCase().replace(' ', ''))}>
                   {header} {sortConfig.key === header.toLowerCase().replace(' ', '') && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
@@ -400,8 +368,8 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ ...cellStyle, textAlign: 'center' }}>
-                  {searchTerm.trim() !== '' ? 'No matching tickets found' : 'No Data Available'}
+                <td colSpan={7} style={{ ...cellStyle, textAlign: 'center' }}>
+                  No Data Available
                 </td>
               </tr>
             ) : (
@@ -409,19 +377,18 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
                 <tr key={idx} style={{ textAlign: 'center', fontWeight: 'bold' }} onClick={() => setSelectedTicket(ticket)}>
                   <td style={cellStyle}>{ticket.type}</td>
                   <td style={cellStyle}>{ticket.title}</td>
-                  <td style={cellStyle}>{ticket.description}</td>
+                  <td style={cellStyle}>{ticket.description.slice(0,20)}</td>
                   <td style={cellStyle}>{ticket.assignedTo}</td>
                   <td style={cellStyle}>{ticket.status}</td>
-                  <td style={cellStyle}>{ticket.created}</td>
+                  <td style={cellStyle}>{ticket.createdAt}</td>
                   <td style={cellStyle}>{ticket.id}</td>
-                  {/* <td style={cellStyle}>{ticket.timeToResolve}</td> */}
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'left', marginTop: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <button
           onClick={() => handlePageChange('prev')}
           disabled={currentPage === 1}

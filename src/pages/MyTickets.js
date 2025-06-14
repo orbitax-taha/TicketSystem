@@ -1,3 +1,71 @@
+// import React, { useState, useEffect } from 'react';
+// import Sidebar from '../components/Sidebar';
+// import Header from '../components/Header';
+// import TicketTable from '../components/TicketTable';
+// import TicketForm from '../components/TicketForm';
+// import ErrorBoundary from '../components/ErrorBoundary';
+// import Swal from 'sweetalert2';
+// import axiosInstance from '../api/axiosInstance';
+
+// const MyTickets = ({ setCurrentPage }) => {
+//   const [tickets, setTickets] = useState([]);
+//   const [showTicketForm, setShowTicketForm] = useState(false);
+
+//   const fetchTickets = async () => {
+//     try {
+//       const response = await axiosInstance.get('/tickets');
+//       const ticketData = response.data.data || [];
+//       const transformedTickets = ticketData.map(ticket => ({
+//         type: 'Request',
+//         title: ticket.title,
+//         id: ticket.id,
+//         description: ticket.description,
+//         reporter: 'Unknown',
+//         assignee: ticket.assignedTo || 'Unassigned',
+//         status: ticket.status,
+//         created: new Date(ticket.createdAt).toLocaleDateString('en-GB'),
+//         timeToResolve: ticket.resolvedAt ? 'Resolved' : '0m',
+//       }));
+//       setTickets(transformedTickets);
+//     } catch (error) {
+//       Swal.fire({
+//         title: 'Error Fetching Tickets',
+//         icon: 'error',
+//         text: error.message || 'Failed to fetch tickets'
+//       });
+//       setTickets([]);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchTickets();
+//   }, []);
+
+//   const handleCreateTicket = (newTicket) => {
+//     if (newTicket.assignee === 'Sammy-ServiceDesk') {
+//       setTickets([newTicket, ...tickets]);
+//       fetchTickets();
+//     }
+//   };
+
+//   return (
+//     <div style={{ display: 'flex' }}>
+//       <Sidebar setCurrentPage={setCurrentPage} currentPage="myTickets" />
+//       <div style={{ flex: 1 }}>
+//         <Header setShowTicketForm={setShowTicketForm} />
+//         <ErrorBoundary>
+//           <TicketTable tickets={tickets} setTickets={setTickets} refetchTickets={fetchTickets} />
+//         </ErrorBoundary>
+//         {showTicketForm && (
+//           <TicketForm onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default MyTickets;
+
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -10,20 +78,22 @@ import axiosInstance from '../api/axiosInstance';
 const MyTickets = ({ setCurrentPage }) => {
   const [tickets, setTickets] = useState([]);
   const [showTicketForm, setShowTicketForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchTickets = async () => {
+    setIsLoading(true);
     try {
       const response = await axiosInstance.get('/tickets');
       const ticketData = response.data.data || [];
       const transformedTickets = ticketData.map(ticket => ({
-        type: 'Request',
+        type: 'Request', // Default since API doesn't provide this
         title: ticket.title,
         id: ticket.id,
         description: ticket.description,
-        reporter: 'Unknown',
-        assignee: ticket.assignedTo || 'Unassigned',
+        reporter: 'Unknown', // Default since API doesn't provide this
+        assignedTo: ticket.assignedTo || 'Unassigned',
         status: ticket.status,
-        created: new Date(ticket.createdAt).toLocaleDateString('en-GB'),
+        createdAt: new Date(ticket.createdAt).toLocaleDateString('en-GB'),
         timeToResolve: ticket.resolvedAt ? 'Resolved' : '0m',
       }));
       setTickets(transformedTickets);
@@ -34,6 +104,8 @@ const MyTickets = ({ setCurrentPage }) => {
         text: error.message || 'Failed to fetch tickets'
       });
       setTickets([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,10 +114,20 @@ const MyTickets = ({ setCurrentPage }) => {
   }, []);
 
   const handleCreateTicket = (newTicket) => {
-    if (newTicket.assignee === 'Sammy-ServiceDesk') {
-      setTickets([newTicket, ...tickets]);
-      fetchTickets();
-    }
+    // Transform the new ticket to match the table structure
+    const transformedTicket = {
+      type: 'Request',
+      title: newTicket.title,
+      id: newTicket.id,
+      description: newTicket.description,
+      reporter: 'Unknown',
+      assignedTo: newTicket.assignedTo || 'Unassigned',
+      status: newTicket.status || 'OPEN',
+      createdAt: new Date(newTicket.createdAt || Date.now()).toLocaleDateString('en-GB'),
+      timeToResolve: newTicket.resolvedAt ? 'Resolved' : '0m',
+    };
+    setTickets([transformedTicket, ...tickets]);
+    fetchTickets(); // Refetch to ensure consistency with backend
   };
 
   return (
@@ -53,9 +135,15 @@ const MyTickets = ({ setCurrentPage }) => {
       <Sidebar setCurrentPage={setCurrentPage} currentPage="myTickets" />
       <div style={{ flex: 1 }}>
         <Header setShowTicketForm={setShowTicketForm} />
-        <ErrorBoundary>
-          <TicketTable tickets={tickets} setTickets={setTickets} refetchTickets={fetchTickets} />
-        </ErrorBoundary>
+        {isLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center', color: '#172b4d' }}>
+            Loading tickets...
+          </div>
+        ) : (
+          <ErrorBoundary>
+            <TicketTable tickets={tickets} setTickets={setTickets} refetchTickets={fetchTickets} />
+          </ErrorBoundary>
+        )}
         {showTicketForm && (
           <TicketForm onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
         )}
