@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import axiosInstance from '../api/axiosInstance';
 
 const TicketForm = ({ onClose, onCreate }) => {
   const [formData, setFormData] = useState({
-    type: 'Request',
-    summary: '',
+    // type: 'Request',
+    // summary: '',
+    title:'',
     description: '',
-    reporter: 'Product-Manager',
-    assignee: 'Sammy-ServiceDesk',
-    status: 'WAITING FOR SUPPORT'
+    // reporter: 'Product-Manager',
+    // assignee: 'Sammy-ServiceDesk',
+    // status: 'WAITING FOR SUPPORT',
+    // created: new Date().toLocaleDateString('en-GB'), // Default value, can be overridden by backend
+    // timeToResolve: '0m' // Default value, can be overridden by backend
   });
 
   const handleChange = (e) => {
@@ -16,7 +20,7 @@ const TicketForm = ({ onClose, onCreate }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.summary || !formData.description) {
+    if (!formData.title || !formData.description) {
       Swal.fire({
         title: 'Validation Error',
         icon: 'error',
@@ -26,15 +30,19 @@ const TicketForm = ({ onClose, onCreate }) => {
     }
 
     try {
-      const newTicket = {
-        id: `ITSM-${Math.floor(Math.random() * 10000)}`,
-        created: new Date().toLocaleDateString('en-GB'),
-        timeToResolve: '0m',
-        ...formData
-      };
+      const response = await axiosInstance.post('/tickets', {
+        // type: formData.type,
+        // summary: formData.summary,
+        title: formData.title,
+        description: formData.description,
+        // reporter: formData.reporter,
+        // assignee: formData.assignee,
+        // status: formData.status,
+        // created: formData.created,
+        // timeToResolve: formData.timeToResolve
+      });
 
-      // Placeholder for API call to create ticket
-      // await axiosInstance.post('/tickets', newTicket);
+      const newTicket = response.data; // Assuming the API returns the created ticket
 
       onCreate(newTicket);
       Swal.fire({
@@ -47,7 +55,7 @@ const TicketForm = ({ onClose, onCreate }) => {
       Swal.fire({
         title: 'Error',
         icon: 'error',
-        text: 'Failed to create ticket.'
+        text: error.message || 'Failed to create ticket.'
       });
     }
   };
@@ -109,22 +117,34 @@ const TicketForm = ({ onClose, onCreate }) => {
     <div style={modalStyle}>
       <div style={formContainerStyle}>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>Create New Ticket</h2>
-        <label style={labelStyle}>Type</label>
-        <select name="type" value={formData.type} onChange={handleChange} style={inputStyle}>
-          <option value="Request">Request</option>
+        {/* <label style={labelStyle}>Type</label>
+        <select name="type" value={formData.type} onChange={handleChange} style={inputStyle}> */}
+          {/* <option value="Request">Request</option>
           <option value="Report a system problem">Report a system problem</option>
           <option value="Broken hardware">Broken hardware</option>
           <option value="Get a guest wifi account">Get a guest wifi account</option>
           <option value="Request new software">Request new software</option>
           <option value="Request new hardware">Request new hardware</option>
           <option value="Request mobile device">Request mobile device</option>
-          <option value="Get IT help">Get IT help</option>
-        </select>
+          <option value="Get IT help">Get IT help</option> */}
+        {/* </select>
         <label style={labelStyle}>Summary *</label>
         <input type="text" name="summary" value={formData.summary} onChange={handleChange} style={inputStyle} />
+         </select> */}
+        <label style={labelStyle}>Title *</label>
+        <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} />
         <label style={labelStyle}>Description *</label>
         <textarea name="description" value={formData.description} onChange={handleChange} rows="4" style={{ ...inputStyle, resize: 'none' }} />
-        <label style={labelStyle}>Reporter</label>
+      
+
+  
+        <label style={labelStyle}>Assignee</label>
+        <select name="assignee" value={formData.assignee} onChange={handleChange} style={inputStyle}>
+          <option value="sumit">Sumit Kumar</option>
+       
+        </select>
+
+        {/* <label style={labelStyle}>Reporter</label>
         <select name="reporter" value={formData.reporter} onChange={handleChange} style={inputStyle}>
           <option value="Product-Manager">Product-Manager</option>
           <option value="ServiceDesk-Manager">ServiceDesk-Manager</option>
@@ -146,7 +166,7 @@ const TicketForm = ({ onClose, onCreate }) => {
           <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
           <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
           <option value="UNDER REVIEW">UNDER REVIEW</option>
-        </select>
+        </select> */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button style={buttonStyle} onClick={handleSubmit}>Create</button>
           <button style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }} onClick={onClose}>Cancel</button>

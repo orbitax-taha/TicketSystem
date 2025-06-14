@@ -3,7 +3,9 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import TicketTable from '../components/TicketTable';
 import TicketForm from '../components/TicketForm';
+import ErrorBoundary from '../components/ErrorBoundary';
 import Swal from 'sweetalert2';
+import axiosInstance from '../api/axiosInstance';
 
 const MyTickets = ({ setCurrentPage }) => {
   const [tickets, setTickets] = useState([]);
@@ -11,26 +13,27 @@ const MyTickets = ({ setCurrentPage }) => {
 
   const fetchTickets = async () => {
     try {
-      // Placeholder for API call to fetch user's tickets
-      // const response = await axiosInstance.get('/my-tickets');
-      // setTickets(response.data);
-
-      // Mock data for now (filtered for a specific assignee)
-      const mockTickets = [
-        { id: 'ITSM-1234', type: 'Request', summary: 'Add access to Jira', description: 'User needs access to Jira for project management', reporter: 'Product-Manager', assignee: 'Sammy-ServiceDesk', status: 'WAITING FOR SUPPORT', created: '24/Sep/2020', timeToResolve: '16m' },
-        { id: 'ITSM-1233', type: 'Report a system problem', summary: "Barclay Inc. is slow", description: 'System performance issues during peak hours', reporter: 'ServiceDesk-Manager', assignee: 'Sammy-ServiceDesk', status: 'WORK IN PROGRESS', created: '23/Sep/2020', timeToResolve: '3h 44m' },
-        { id: 'ITSM-1230', type: 'Request access', summary: "Admin access to Jira", description: 'Requesting admin privileges in Jira', reporter: 'Product-Manager', assignee: 'Sammy-ServiceDesk', status: 'WORK IN PROGRESS', created: '23/Sep/2020', timeToResolve: '7h 44m' },
-        { id: 'ITSM-1229', type: 'Get a guest wifi account', summary: 'Guest wifi access', description: 'Need wifi access for a guest', reporter: 'Data-Developer', assignee: 'Sammy-ServiceDesk', status: 'WORK IN PROGRESS', created: '23/Sep/2020', timeToResolve: '7h 44m' },
-        { id: 'ITSM-1225', type: 'Request mobile device', summary: 'Need a new iPhone', description: 'Requesting a new iPhone for work', reporter: 'Change-Manager', assignee: 'Sammy-ServiceDesk', status: 'WAITING FOR APPROVAL', created: '23/Sep/2020', timeToResolve: '7h 44m' },
-        { id: 'ITSM-1224', type: 'Get IT help', summary: 'Investigate website slowness', description: 'Website performance issues reported', reporter: 'Carly-Chief-Exec', assignee: 'Sammy-ServiceDesk', status: 'UNDER REVIEW', created: '23/Sep/2020', timeToResolve: '7h 44m' }
-      ];
-      setTickets(mockTickets);
+      const response = await axiosInstance.get('/tickets');
+      const ticketData = response.data.data || [];
+      const transformedTickets = ticketData.map(ticket => ({
+        type: 'Request',
+        title: ticket.title,
+        id: ticket.id,
+        description: ticket.description,
+        reporter: 'Unknown',
+        assignee: ticket.assignedTo || 'Unassigned',
+        status: ticket.status,
+        created: new Date(ticket.createdAt).toLocaleDateString('en-GB'),
+        timeToResolve: ticket.resolvedAt ? 'Resolved' : '0m',
+      }));
+      setTickets(transformedTickets);
     } catch (error) {
       Swal.fire({
         title: 'Error Fetching Tickets',
         icon: 'error',
         text: error.message || 'Failed to fetch tickets'
       });
+      setTickets([]);
     }
   };
 
@@ -41,6 +44,7 @@ const MyTickets = ({ setCurrentPage }) => {
   const handleCreateTicket = (newTicket) => {
     if (newTicket.assignee === 'Sammy-ServiceDesk') {
       setTickets([newTicket, ...tickets]);
+      fetchTickets();
     }
   };
 
@@ -49,7 +53,9 @@ const MyTickets = ({ setCurrentPage }) => {
       <Sidebar setCurrentPage={setCurrentPage} currentPage="myTickets" />
       <div style={{ flex: 1 }}>
         <Header setShowTicketForm={setShowTicketForm} />
-        <TicketTable tickets={tickets} setTickets={setTickets} />
+        <ErrorBoundary>
+          <TicketTable tickets={tickets} setTickets={setTickets} refetchTickets={fetchTickets} />
+        </ErrorBoundary>
         {showTicketForm && (
           <TicketForm onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
         )}

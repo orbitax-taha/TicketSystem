@@ -194,7 +194,7 @@
 import React, { useState, useEffect } from 'react';
 import TicketDetails from './TicketDetails';
 
-const TicketTable = ({ tickets, setTickets }) => {
+const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -204,9 +204,9 @@ const TicketTable = ({ tickets, setTickets }) => {
   const rowsPerPage = 10;
 
   useEffect(() => {
-    let updatedTickets = [...tickets];
-
-    // Apply status filter
+    // Ensure tickets is an array before proceeding
+    const validTickets = Array.isArray(tickets) ? tickets : [];
+    let updatedTickets = [...validTickets];
     if (filterStatus !== 'all') {
       updatedTickets = updatedTickets.filter(ticket => ticket.status === filterStatus);
     }
@@ -355,11 +355,13 @@ const TicketTable = ({ tickets, setTickets }) => {
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', marginTop: '60px', marginLeft: '250px' }}>
+      <div style={headerStyle}>PROJECTS / ITSM Service Desk / My Tickets</div>
+
       <div style={filterRowStyle}>
         <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#172b4d' }}>Filter by Status:</label>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={selectStyle}>
           <option value="all">All</option>
-          <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
+          <option value="OPEN">OPEN</option>
           <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
           <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
           <option value="UNDER REVIEW">UNDER REVIEW</option>
@@ -387,8 +389,8 @@ const TicketTable = ({ tickets, setTickets }) => {
       <div style={tableContainerStyle}>
         <table style={tableStyle}>
           <thead>
-            <tr style={{ backgroundColor: '#003a8c' }}>
-              {['Type', 'Key', 'Summary', 'Reporter', 'Assignee', 'Status', 'Created', 'Time to resolve'].map((header, idx) => (
+            <tr style={{ backgroundColor: '#f4f5f7' }}>
+              {['Type', 'Title', 'Description', 'Assigned To', 'Status','Created At','Key', ].map((header, idx) => (
                 <th key={idx} style={headerCellStyle} onClick={() => handleSort(header.toLowerCase().replace(' ', ''))}>
                   {header} {sortConfig.key === header.toLowerCase().replace(' ', '') && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
@@ -405,14 +407,14 @@ const TicketTable = ({ tickets, setTickets }) => {
             ) : (
               paginatedData.map((ticket, idx) => (
                 <tr key={idx} style={{ textAlign: 'center', fontWeight: 'bold' }} onClick={() => setSelectedTicket(ticket)}>
-                  <td style={cellStyle}>{ticket.type || '-'}</td>
-                  <td style={cellStyle}>{ticket.id || '-'}</td>
-                  <td style={cellStyle}>{ticket.summary || '-'}</td>
-                  <td style={cellStyle}>{ticket.reporter || '-'}</td>
-                  <td style={cellStyle}>{ticket.assignee || '-'}</td>
-                  <td style={cellStyle}>{ticket.status || '-'}</td>
-                  <td style={cellStyle}>{ticket.created || '-'}</td>
-                  <td style={cellStyle}>{ticket.timeToResolve || '-'}</td>
+                  <td style={cellStyle}>{ticket.type}</td>
+                  <td style={cellStyle}>{ticket.title}</td>
+                  <td style={cellStyle}>{ticket.description}</td>
+                  <td style={cellStyle}>{ticket.assignedTo}</td>
+                  <td style={cellStyle}>{ticket.status}</td>
+                  <td style={cellStyle}>{ticket.created}</td>
+                  <td style={cellStyle}>{ticket.id}</td>
+                  {/* <td style={cellStyle}>{ticket.timeToResolve}</td> */}
                 </tr>
               ))
             )}
@@ -440,7 +442,7 @@ const TicketTable = ({ tickets, setTickets }) => {
         </button>
       </div>
       {selectedTicket && (
-        <TicketDetails ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />
+        <TicketDetails ticket={selectedTicket} onClose={() => { setSelectedTicket(null); refetchTickets(); }} />
       )}
     </div>
   );
