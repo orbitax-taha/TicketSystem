@@ -218,7 +218,7 @@ const Header = ({ setShowTicketForm }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div className="header-logo">OTS</div>
           <nav className="header-nav">
-            {['Your Work', 'Projects', 'Filters', 'Dashboards', 'Apps'].map((item) => (
+            {['Your Work', 'Projects', 'Filters', 'Dashboards'].map((item) => (
               <div key={item} className="nav-item">
                 {item}
               </div>
@@ -226,7 +226,7 @@ const Header = ({ setShowTicketForm }) => {
             <div className="nav-item " onClick={() => setShowTicketForm(true)}>
               Create
             </div>
-            <div className="search-container">
+            {/* <div className="search-container">
               <input
                 type="text"
                 placeholder="Search..."
@@ -242,7 +242,7 @@ const Header = ({ setShowTicketForm }) => {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-            </div>
+            </div> */}
           </nav>
         </div>
         <div className="user-section">

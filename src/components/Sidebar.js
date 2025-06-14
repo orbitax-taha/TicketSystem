@@ -151,7 +151,7 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
               <svg style={iconStyle} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
               </svg>
-              All open tickets
+              Status 
             </div>
             <div
               style={currentPage === 'myTickets' ? activeMenuItemStyle : menuItemStyle}
@@ -283,18 +283,18 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
         )}
       </div>
       <div>
-        <div style={titleStyle} onClick={() => toggleSection('knowledgeBase')}>
+        {/* <div style={titleStyle} onClick={() => toggleSection('knowledgeBase')}>
           KNOWLEDGE BASE
           <svg style={{ width: '16px', height: '16px', transform: openSections.knowledgeBase ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 9l6 6 6-6" />
           </svg>
-        </div>
+        </div> */}
         {openSections.knowledgeBase && (
           <div>
-            {/* Add menu items here if needed */}
+            {/* Add menu items here if needed
           </div>
         )}
-      </div>
+      </div> 
       <div>
         <div style={titleStyle} onClick={() => toggleSection('reports')}>
           REPORTS
@@ -309,12 +309,12 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
         )}
       </div>
       <div>
-        <div style={titleStyle} onClick={() => toggleSection('channelsPeople')}>
+        {/* <div style={titleStyle} onClick={() => toggleSection('channelsPeople')}>
           CHANNELS & PEOPLE
           <svg style={{ width: '16px', height: '16px', transform: openSections.channelsPeople ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 9l6 6 6-6" />
           </svg>
-        </div>
+        </div> */}
         {openSections.channelsPeople && (
           <div>
             {/* <div
