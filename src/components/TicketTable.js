@@ -313,13 +313,13 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
   };
 
   const headerCellStyle = {
-    backgroundColor: '#fafbfc',
+    backgroundColor: '#0052cc',
     border: '1px solid #dfe1e6',
     padding: '8px',
     whiteSpace: 'nowrap',
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#172b4d',
+    color: 'white',
     cursor: 'pointer'
   };
 
