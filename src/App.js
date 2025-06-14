@@ -1,25 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Dashboard from './pages/Dashboard';
+import MyTickets from './pages/MyTickets';
 
-function App() {
+const App = () => {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard setCurrentPage={setCurrentPage} />;
+      case 'myTickets':
+        return <MyTickets setCurrentPage={setCurrentPage} />;
+      default:
+        return <Dashboard setCurrentPage={setCurrentPage} />;
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
+      {renderPage()}
     </div>
   );
-}
+};
 
 export default App;
