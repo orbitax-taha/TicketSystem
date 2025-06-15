@@ -1,3 +1,4 @@
+
 // import React, { useState, useEffect } from 'react';
 // import Sidebar from '../components/Sidebar';
 // import Header from '../components/Header';
@@ -98,13 +99,13 @@
 // export default MyTickets;
 
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
-import TicketTable from '../components/TicketTable';
-import CreateTicket from '../components/CreateTicket';
-import ErrorBoundary from '../components/ErrorBoundary';
+import Sidebar from '../../components/Sidebar';
+import Header from '../../components/Header';
+import TicketTable from '../../components/TicketTable';
+import CreateTicket from '../../components/CreateTicket';
+import ErrorBoundary from '../../components/ErrorBoundary';
 import Swal from 'sweetalert2';
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../../api/axiosInstance';
 
 const MyTickets = ({ setCurrentPage }) => {
   const [tickets, setTickets] = useState([]);
