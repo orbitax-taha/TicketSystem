@@ -5,18 +5,20 @@
 // import axiosInstance from '../api/axiosInstance';
 // import { CircularProgress } from '@mui/material';
 
-// const CreateTicket = ({ onClose, onCreate }) => {
+// const CreateTicket = ({ onClose, onCreate, priorities, users }) => {
 //   const [formData, setFormData] = useState({
 //     title: '',
 //     description: '',
-//     assignedTo: '1', // Default value as per your code
-//     priorityName: '' // Initialize priorityName
+//     assignedTo: '',
+//     priority: '',
 //   });
-//   const [isLoading, setIsLoading] = useState(false); // Loading state
-
+//   const [isLoading, setIsLoading] = useState(false);
 //   const modalRef = useRef(null);
 //   const firstFocusableElementRef = useRef(null);
 //   const lastFocusableElementRef = useRef(null);
+
+//   // Use the username from localStorage
+//   const loggedInUser = localStorage.getItem('username') || 'admin';
 
 //   useEffect(() => {
 //     const focusableElements = modalRef.current.querySelectorAll(
@@ -54,41 +56,52 @@
 //   };
 
 //   const handleSubmit = async () => {
-//     if (!formData.title || !formData.description || !formData.assignedTo || !formData.priorityName) {
+//     if (!formData.title || !formData.description || !formData.assignedTo || !formData.priority) {
 //       Swal.fire({
 //         title: 'Validation Error',
 //         icon: 'error',
-//         text: 'Title, Description, Assignee, and Priority are required!'
+//         text: 'Title, Description, Assignee, and Priority are required!',
 //       });
 //       return;
 //     }
 
-//     setIsLoading(true); // Start loading
+//     const selectedUser = users.find((user) => user.id === parseInt(formData.assignedTo));
+//     if (!selectedUser) {
+//       Swal.fire({
+//         title: 'Validation Error',
+//         icon: 'error',
+//         text: 'Invalid assignee selected.',
+//       });
+//       return;
+//     }
 
+//     setIsLoading(true);
 //     try {
-//       const response = await axiosInstance.post('/tickets', {
+//       const payload = {
 //         title: formData.title,
 //         description: formData.description,
-//         assignedTo: formData.assignedTo,
-//         priorityName: formData.priorityName
-//       });
-
-//       const newTicket = response.data;
-//       onCreate(newTicket);
+//         assignedTo: parseInt(formData.assignedTo),
+//         assignedBy: loggedInUser,
+//         priorityId: parseInt(formData.priority),
+//       };
+//       console.log('Create ticket payload:', payload);
+//       const response = await axiosInstance.post('/tickets', payload);
+//       onCreate({ ...response.data, priorityId: parseInt(formData.priority) });
 //       Swal.fire({
 //         title: 'Success',
 //         icon: 'success',
-//         text: 'Ticket created successfully!'
+//         text: 'Ticket created successfully!',
 //       });
 //       onClose();
 //     } catch (error) {
+//       console.error('Create ticket error:', error.response?.data || error.message);
 //       Swal.fire({
 //         title: 'Error',
 //         icon: 'error',
-//         text: error.message || 'Failed to create ticket.'
+//         text: error.response?.data?.message || 'Failed to create ticket.',
 //       });
 //     } finally {
-//       setIsLoading(false); // Stop loading
+//       setIsLoading(false);
 //     }
 //   };
 
@@ -102,7 +115,7 @@
 //     display: 'flex',
 //     justifyContent: 'center',
 //     alignItems: 'center',
-//     zIndex: 2000
+//     zIndex: 2000,
 //   };
 
 //   const formContainerStyle = {
@@ -111,7 +124,7 @@
 //     padding: '20px',
 //     width: '500px',
 //     maxHeight: '80vh',
-//     overflowY: 'auto'
+//     overflowY: 'auto',
 //   };
 
 //   const labelStyle = {
@@ -119,7 +132,7 @@
 //     fontSize: '14px',
 //     fontWeight: 'bold',
 //     color: '#172b4d',
-//     marginBottom: '8px'
+//     marginBottom: '8px',
 //   };
 
 //   const inputStyle = {
@@ -130,7 +143,7 @@
 //     fontSize: '14px',
 //     fontWeight: 'bold',
 //     color: '#172b4d',
-//     marginBottom: '15px'
+//     marginBottom: '15px',
 //   };
 
 //   const buttonStyle = {
@@ -145,13 +158,13 @@
 //     marginRight: '10px',
 //     display: 'flex',
 //     alignItems: 'center',
-//     gap: '8px' // Space between spinner and text
+//     gap: '8px',
 //   };
 
 //   const disabledButtonStyle = {
 //     ...buttonStyle,
 //     backgroundColor: '#cccccc',
-//     cursor: 'not-allowed'
+//     cursor: 'not-allowed',
 //   };
 
 //   return (
@@ -161,7 +174,14 @@
 //           Create New Ticket
 //         </h2>
 //         <label style={labelStyle}>Title *</label>
-//         <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} disabled={isLoading} />
+//         <input
+//           type="text"
+//           name="title"
+//           value={formData.title}
+//           onChange={handleChange}
+//           style={inputStyle}
+//           disabled={isLoading}
+//         />
 //         <label style={labelStyle}>Description *</label>
 //         <textarea
 //           name="description"
@@ -173,17 +193,17 @@
 //         />
 //         <label style={labelStyle}>Assignee *</label>
 //         <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle} disabled={isLoading}>
-//           <option value="1">Sumit Kumar</option>
-//           <option value="2">Abhishek</option>
-//           <option value="3">Taleem</option>
-//           <option value="4">JB</option>
+//           <option value="" disabled>Select Assignee</option>
+//           {users.map((user) => (
+//             <option key={user.id} value={user.id}>{user.username}</option>
+//           ))}
 //         </select>
 //         <label style={labelStyle}>Priority *</label>
-//         <select name="priorityName" value={formData.priorityName} onChange={handleChange} style={inputStyle} disabled={isLoading}>
+//         <select name="priority" value={formData.priority} onChange={handleChange} style={inputStyle} disabled={isLoading}>
 //           <option value="" disabled>Select Priority</option>
-//           <option value="Low">Low</option>
-//           <option value="Moderate">Moderate</option>
-//           <option value="High">High</option>
+//           {priorities.map((p) => (
+//             <option key={p.id} value={p.id}>{p.name}</option>
+//           ))}
 //         </select>
 //         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 //           <button
@@ -209,44 +229,28 @@
 
 // export default CreateTicket;
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
 import { CircularProgress } from '@mui/material';
 
-const CreateTicket = ({ onClose, onCreate }) => {
+const CreateTicket = ({ onClose, onCreate, priorities, users }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    assignedTo: '1',
-    priority: ''
+    assignedTo: '',
+    priority: '',
+    files: [], // Added to store multiple files
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [priorities, setPriorities] = useState([]);
   const modalRef = useRef(null);
   const firstFocusableElementRef = useRef(null);
   const lastFocusableElementRef = useRef(null);
 
-  useEffect(() => {
-    const fetchPriorities = async () => {
-      try {
-        const response = await axiosInstance.get('/priorities');
-        const normalizedPriorities = (response.data || []).map(p => ({
-          id: p.id,
-          name: p.name.replace('Heigh', 'High') // Normalize typos
-        }));
-        setPriorities(normalizedPriorities);
-      } catch (error) {
-        console.error('Error fetching priorities:', error);
-        Swal.fire({
-          title: 'Error',
-          icon: 'error',
-          text: 'Failed to load priorities.'
-        });
-      }
-    };
-    fetchPriorities();
+  const loggedInUser = localStorage.getItem('username') || 'admin';
 
+  useEffect(() => {
     const focusableElements = modalRef.current.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
@@ -278,7 +282,13 @@ const CreateTicket = ({ onClose, onCreate }) => {
   }, [onClose]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData({ ...formData, files });
   };
 
   const handleSubmit = async () => {
@@ -286,32 +296,61 @@ const CreateTicket = ({ onClose, onCreate }) => {
       Swal.fire({
         title: 'Validation Error',
         icon: 'error',
-        text: 'Title, Description, Assignee, and Priority are required!'
+        text: 'Title, Description, Assignee, and Priority are required!',
+      });
+      return;
+    }
+
+    const selectedUser = users.find((user) => user.id === parseInt(formData.assignedTo));
+    if (!selectedUser) {
+      Swal.fire({
+        title: 'Validation Error',
+        icon: 'error',
+        text: 'Invalid assignee selected.',
       });
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post('/tickets', {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('assignedTo', parseInt(formData.assignedTo));
+      formDataToSend.append('assignedBy', loggedInUser);
+      formDataToSend.append('priorityId', parseInt(formData.priority));
+      formData.files.forEach((file, index) => {
+        formDataToSend.append(`files[${index}]`, file);
+      });
+
+      console.log('Create ticket payload:', {
         title: formData.title,
         description: formData.description,
         assignedTo: parseInt(formData.assignedTo),
-        priority: parseInt(formData.priority)
+        assignedBy: loggedInUser,
+        priorityId: parseInt(formData.priority),
+        files: formData.files.map((file) => file.name),
       });
-      onCreate(response.data);
+
+      const response = await axiosInstance.post('/tickets', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      onCreate({ ...response.data, priorityId: parseInt(formData.priority), images: formData.files.map((file) => file.name) });
       Swal.fire({
         title: 'Success',
         icon: 'success',
-        text: 'Ticket created successfully!'
+        text: 'Ticket created successfully!',
       });
       onClose();
     } catch (error) {
-      console.error('Create error:', error.response?.data || error.message);
+      console.error('Create ticket error:', error.response?.data || error.message);
       Swal.fire({
         title: 'Error',
         icon: 'error',
-        text: error.response?.data?.message || 'Failed to create ticket.'
+        text: error.response?.data?.message || 'Failed to create ticket.',
       });
     } finally {
       setIsLoading(false);
@@ -328,7 +367,7 @@ const CreateTicket = ({ onClose, onCreate }) => {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2000
+    zIndex: 2000,
   };
 
   const formContainerStyle = {
@@ -337,7 +376,7 @@ const CreateTicket = ({ onClose, onCreate }) => {
     padding: '20px',
     width: '500px',
     maxHeight: '80vh',
-    overflowY: 'auto'
+    overflowY: 'auto',
   };
 
   const labelStyle = {
@@ -345,7 +384,7 @@ const CreateTicket = ({ onClose, onCreate }) => {
     fontSize: '14px',
     fontWeight: 'bold',
     color: '#172b4d',
-    marginBottom: '8px'
+    marginBottom: '8px',
   };
 
   const inputStyle = {
@@ -356,7 +395,7 @@ const CreateTicket = ({ onClose, onCreate }) => {
     fontSize: '14px',
     fontWeight: 'bold',
     color: '#172b4d',
-    marginBottom: '15px'
+    marginBottom: '15px',
   };
 
   const buttonStyle = {
@@ -371,13 +410,13 @@ const CreateTicket = ({ onClose, onCreate }) => {
     marginRight: '10px',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '8px',
   };
 
   const disabledButtonStyle = {
     ...buttonStyle,
     backgroundColor: '#cccccc',
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   };
 
   return (
@@ -387,7 +426,14 @@ const CreateTicket = ({ onClose, onCreate }) => {
           Create New Ticket
         </h2>
         <label style={labelStyle}>Title *</label>
-        <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} disabled={isLoading} />
+        <input
+          type="text"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          style={inputStyle}
+          disabled={isLoading}
+        />
         <label style={labelStyle}>Description *</label>
         <textarea
           name="description"
@@ -399,10 +445,10 @@ const CreateTicket = ({ onClose, onCreate }) => {
         />
         <label style={labelStyle}>Assignee *</label>
         <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle} disabled={isLoading}>
-          <option value="1">Sumit Kumar</option>
-          <option value="2">Abhishek</option>
-          <option value="3">Taleem</option>
-          <option value="4">JB</option>
+          <option value="" disabled>Select Assignee</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>{user.username}</option>
+          ))}
         </select>
         <label style={labelStyle}>Priority *</label>
         <select name="priority" value={formData.priority} onChange={handleChange} style={inputStyle} disabled={isLoading}>
@@ -411,6 +457,26 @@ const CreateTicket = ({ onClose, onCreate }) => {
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
+        <label style={labelStyle}>Attachments (Images/PDFs)</label>
+        <input
+          type="file"
+          name="files"
+          onChange={handleFileChange}
+          style={inputStyle}
+          disabled={isLoading}
+          multiple
+          accept="image/jpeg,image/png,application/pdf"
+        />
+        {formData.files.length > 0 && (
+          <div style={{ marginBottom: '15px', fontSize: '14px', color: '#172b4d' }}>
+            <strong>Selected Files:</strong>
+            <ul>
+              {formData.files.map((file, index) => (
+                <li key={index}>{file.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             style={isLoading ? disabledButtonStyle : buttonStyle}

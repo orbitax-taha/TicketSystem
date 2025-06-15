@@ -1,71 +1,174 @@
-// //For EDIT Ticket
-
-// import React, { useState } from 'react';
+// import React, { useState, useEffect } from 'react';
 // import Swal from 'sweetalert2';
 // import axiosInstance from '../api/axiosInstance';
 // import { CircularProgress } from '@mui/material';
 
 // const TicketDetails = ({ ticket, onClose }) => {
 //   const [isEditing, setIsEditing] = useState(false);
-//   const [isLoading, setIsLoading] = useState(false); // Add loading state
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [priorities, setPriorities] = useState([]);
+//   const [users, setUsers] = useState([]);
+//   const [ticketExists, setTicketExists] = useState(true); // New state to track ticket existence
+
+//   // Hardcoded assignee mapping based on /users API response
+//   const assigneeMap = {
+//     '1': 'Sumit Kumar',
+//     '2': 'Abhishek',
+//     '3': 'Taha'
+//   };
+
 //   const [formData, setFormData] = useState({
+//     id: ticket.id || '',
 //     title: ticket.title || '',
 //     description: ticket.description || '',
-//     status: ticket.status || '',
-//     assignedTo: ticket.assignedTo || '', // Align with MyTickets
-//     priorityName: ticket.priorityName || '' // Use priorityName
+//     status: ticket.status || 'OPEN',
+//     assignedTo: ticket.assignedTo || '',
+//     priority: ticket.priority?.toString() || ''
 //   });
+
+//   useEffect(() => {
+//     const fetchPrioritiesAndUsers = async () => {
+//       try {
+//         // Fetch priorities
+//         const prioritiesResponse = await axiosInstance.get('/priorities');
+//         const normalizedPriorities = (prioritiesResponse.data || []).map(p => ({
+//           id: p.id,
+//           name: p.name.replace('Heigh', 'High')
+//         }));
+//         setPriorities(normalizedPriorities);
+
+//         // Fetch users
+//         const usersResponse = await axiosInstance.get('/users');
+//         setUsers(usersResponse.data || []);
+//       } catch (error) {
+//         console.error('Error fetching priorities or users:', error);
+//         Swal.fire({
+//           title: 'Error',
+//           icon: 'error',
+//           text: 'Failed to load priorities or users.'
+//         });
+//       }
+//     };
+
+//     const validateTicket = async () => {
+//       if (!ticket.id) {
+//         setTicketExists(false);
+//         Swal.fire({
+//           title: 'Invalid Ticket',
+//           icon: 'error',
+//           text: 'No valid ticket ID provided.',
+//           confirmButtonText: 'Return to Tickets',
+//           allowOutsideClick: false
+//         }).then(() => onClose());
+//         return;
+//       }
+
+//       try {
+//         setIsLoading(true);
+//         await axiosInstance.get(`/tickets/${ticket.id}`);
+//         setTicketExists(true);
+//       } catch (error) {
+//         console.error('Error validating ticket:', error.response?.data || error.message);
+//         setTicketExists(false);
+//         Swal.fire({
+//           title: 'Ticket Not Found',
+//           icon: 'error',
+//           text: `The ticket with ID ${ticket.id} does not exist.`,
+//           confirmButtonText: 'Return to Tickets',
+//           allowOutsideClick: false
+//         }).then(() => onClose());
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     fetchPrioritiesAndUsers();
+//     validateTicket();
+//   }, [ticket.id, onClose]);
 
 //   const handleChange = (e) => {
 //     setFormData({ ...formData, [e.target.name]: e.target.value });
 //   };
 
 //   const handleUpdate = async () => {
-//     if (!formData.title || !formData.description || !formData.assignedTo || !formData.priorityName) {
+//     if (!ticketExists) {
+//       Swal.fire({
+//         title: 'Cannot Update',
+//         icon: 'error',
+//         text: 'This ticket no longer exists.',
+//         confirmButtonText: 'Return to Tickets'
+//       }).then(() => onClose());
+//       return;
+//     }
+
+//     if (!formData.id || !formData.title || !formData.description || !formData.assignedTo || !formData.priority) {
 //       Swal.fire({
 //         title: 'Validation Error',
 //         icon: 'error',
-//         text: 'Title, Description, Assignee, and Priority are required!'
+//         text: 'ID, Title, Description, Assignee, and Priority are required!'
 //       });
 //       return;
 //     }
 
-//     setIsLoading(true); // Start loading
-
+//     setIsLoading(true);
 //     try {
-//      const response = await axiosInstance.put(`/tickets/${ticket.id}`, {
-//          id: ticket.id,
+//       const payload = {
+//         id: formData.id,
 //         title: formData.title,
 //         description: formData.description,
 //         status: formData.status,
-//         assignedToDep: formData.assignedTo, // Map to API's assignedToDep
-//         priorityName: formData.priorityName
-//       });
+//         assignedTo: parseInt(formData.assignedTo),
+//         priority: parseInt(formData.priority)
+//       };
+//       const response = await axiosInstance.put(`/tickets/${ticket.id}`, payload);
 //       Swal.fire({
 //         title: 'Success',
 //         icon: 'success',
 //         text: 'Ticket updated successfully!'
 //       });
 //       setFormData({
+//         id: response.data.id,
 //         title: response.data.title,
 //         description: response.data.description,
 //         status: response.data.status,
-//         assignedTo: response.data.assignedToDep, // Update with API response
-//         priorityName: response.data.priorityName
+//         assignedTo: response.data.assignedTo?.toString() || '',
+//         priority: response.data.priority?.toString() || ''
 //       });
 //       setIsEditing(false);
 //     } catch (error) {
-//       Swal.fire({
-//         title: 'Error',
-//         icon: 'error',
-//         text: error.message || 'Failed to update ticket.'
-//       });
+//       console.error('Update error:', error.response?.data || error.message);
+//       if (error.response?.status === 404) {
+//         setTicketExists(false);
+//         Swal.fire({
+//           title: 'Ticket Not Found',
+//           icon: 'error',
+//           text: `The ticket with ID ${ticket.id} was not found.`,
+//           confirmButtonText: 'Return to Tickets',
+//           allowOutsideClick: false
+//         }).then(() => onClose());
+//       } else {
+//         Swal.fire({
+//           title: 'Error',
+//           icon: 'error',
+//           text: error.response?.data?.message || 'Failed to update ticket.'
+//         });
+//       }
 //     } finally {
-//       setIsLoading(false); // Stop loading
+//       setIsLoading(false);
 //     }
 //   };
 
 //   const handleDelete = async () => {
+//     if (!ticketExists) {
+//       Swal.fire({
+//         title: 'Cannot Delete',
+//         icon: 'error',
+//         text: 'This ticket no longer exists.',
+//         confirmButtonText: 'Return to Tickets'
+//       }).then(() => onClose());
+//       return;
+//     }
+
 //     const confirm = await Swal.fire({
 //       title: 'Are you sure?',
 //       text: 'This action cannot be undone.',
@@ -76,7 +179,7 @@
 //     });
 
 //     if (confirm.isConfirmed) {
-//       setIsLoading(true); // Start loading
+//       setIsLoading(true);
 //       try {
 //         await axiosInstance.delete(`/tickets/${ticket.id}`);
 //         Swal.fire({
@@ -86,15 +189,32 @@
 //         });
 //         onClose();
 //       } catch (error) {
-//         Swal.fire({
-//           title: 'Error',
-//           icon: 'error',
-//           text: error.message || 'Failed to delete ticket.'
-//         });
+//         console.error('Delete error:', error.response?.data || error.message);
+//         if (error.response?.status === 404) {
+//           setTicketExists(false);
+//           Swal.fire({
+//             title: 'Ticket Not Found',
+//             icon: 'error',
+//             text: `The ticket with ID ${ticket.id} was not found.`,
+//             confirmButtonText: 'Return to Tickets',
+//             allowOutsideClick: false
+//           }).then(() => onClose());
+//         } else {
+//           Swal.fire({
+//             title: 'Error',
+//             icon: 'error',
+//             text: error.response?.data?.message || 'Failed to delete ticket.'
+//           });
+//         }
 //       } finally {
-//         setIsLoading(false); // Stop loading
+//         setIsLoading(false);
 //       }
 //     }
+//   };
+
+//   const getPriorityName = (priorityId) => {
+//     const priority = priorities.find(p => p.id === parseInt(priorityId));
+//     return priority ? priority.name : 'Not set';
 //   };
 
 //   const modalStyle = {
@@ -154,7 +274,7 @@
 //     marginRight: '10px',
 //     display: 'flex',
 //     alignItems: 'center',
-//     gap: '8px' // Space between spinner and text
+//     gap: '8px'
 //   };
 
 //   const disabledButtonStyle = {
@@ -163,12 +283,37 @@
 //     cursor: 'not-allowed'
 //   };
 
+//   if (isLoading && !isEditing) {
+//     return (
+//       <div style={modalStyle}>
+//         <div style={detailsContainerStyle}>
+//           <div style={{ textAlign: 'center', padding: '20px' }}>
+//             <CircularProgress />
+//             <p style={{ color: '#172b4d', marginTop: '10px' }}>Loading ticket details...</p>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (!ticketExists) {
+//     return null; // Modal will close via Swal
+//   }
+
 //   return (
 //     <div style={modalStyle}>
 //       <div style={detailsContainerStyle}>
 //         {isEditing ? (
 //           <>
 //             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>Edit Ticket</h2>
+//             <label style={labelStyle}>ID</label>
+//             <input
+//               type="text"
+//               name="id"
+//               value={formData.id}
+//               readOnly
+//               style={{ ...inputStyle, backgroundColor: '#f4f5f7' }}
+//             />
 //             <label style={labelStyle}>Title *</label>
 //             <input
 //               type="text"
@@ -189,24 +334,25 @@
 //             />
 //             <label style={labelStyle}>Status</label>
 //             <select name="status" value={formData.status} onChange={handleChange} style={inputStyle} disabled={isLoading}>
-//               <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
+//               <option value="OPEN">OPEN</option>
 //               <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
-//               <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
+//               <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
 //               <option value="UNDER REVIEW">UNDER REVIEW</option>
+//               <option value="COMPLETED">COMPLETED</option>
 //             </select>
 //             <label style={labelStyle}>Assignee *</label>
 //             <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle} disabled={isLoading}>
-//               <option value="sumit">Sumit Kumar</option>
-//               <option value="abhishek">Abhishek</option>
-//               <option value="taleem">Taleem</option>
-//               <option value="jb">JB</option>
+//               <option value="" disabled>Select Assignee</option>
+//               {Object.entries(assigneeMap).map(([id, name]) => (
+//                 <option key={id} value={id}>{name}</option>
+//               ))}
 //             </select>
 //             <label style={labelStyle}>Priority *</label>
-//             <select name="priorityName" value={formData.priorityName} onChange={handleChange} style={inputStyle} disabled={isLoading}>
+//             <select name="priority" value={formData.priority} onChange={handleChange} style={inputStyle} disabled={isLoading}>
 //               <option value="" disabled>Select Priority</option>
-//               <option value="Low">Low</option>
-//               <option value="Moderate">Moderate</option>
-//               <option value="High">High</option>
+//               {priorities.map((p) => (
+//                 <option key={p.id} value={p.id}>{p.name}</option>
+//               ))}
 //             </select>
 //             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 //               <button
@@ -228,19 +374,19 @@
 //           </>
 //         ) : (
 //           <>
-//             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>{ticket.title}</h2>
+//             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>{ticket.title || 'No Title'}</h2>
 //             <div style={labelStyle}>Key</div>
-//             <div style={valueStyle}>{ticket.id}</div>
+//             <div style={valueStyle}>{ticket.id || 'N/A'}</div>
 //             <div style={labelStyle}>Description</div>
 //             <div style={valueStyle}>{ticket.description || 'No description provided'}</div>
 //             <div style={labelStyle}>Assigned To</div>
-//             <div style={valueStyle}>{ticket.assignedTo || 'Not assigned'}</div>
+//             <div style={valueStyle}>{assigneeMap[ticket.assignedTo] || ticket.assignedTo || 'Not assigned'}</div>
 //             <div style={labelStyle}>Status</div>
-//             <div style={valueStyle}>{ticket.status}</div>
+//             <div style={valueStyle}>{ticket.status || 'N/A'}</div>
 //             <div style={labelStyle}>Priority</div>
-//             <div style={valueStyle}>{ticket.priorityName || 'Not set'}</div>
+//             <div style={valueStyle}>{getPriorityName(ticket.priority)}</div>
 //             <div style={labelStyle}>Created</div>
-//             <div style={valueStyle}>{ticket.createdAt}</div>
+//             <div style={valueStyle}>{ticket.createdAt || 'N/A'}</div>
 //             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 //               <button
 //                 style={{ ...buttonStyle, backgroundColor: '#0052cc' }}
@@ -279,65 +425,79 @@ import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
 import { CircularProgress } from '@mui/material';
 
-const TicketDetails = ({ ticket, onClose }) => {
+const TicketDetails = ({ ticket, onClose, priorities, users }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [priorities, setPriorities] = useState([]);
-  const assigneeMap = {
-    sumit: '1',
-    abhishek: '2',
-    taleem: '3',
-    jb: '4'
-  };
-  const reverseAssigneeMap = {
-    '1': 'Sumit Kumar',
-    '2': 'Abhishek',
-    '3': 'Taleem',
-    '4': 'JB'
-  };
+  const [ticketExists, setTicketExists] = useState(true);
+
   const [formData, setFormData] = useState({
     id: ticket.id || '',
     title: ticket.title || '',
     description: ticket.description || '',
     status: ticket.status || 'OPEN',
-    assignedTo: assigneeMap[ticket.assignedTo?.toLowerCase()] || '',
-    priority: ticket.priority?.toString() || ''
+    assignedTo: ticket.assignedTo?.toString() || '',
+    priority: ticket.priority?.toString() || '',
   });
 
   useEffect(() => {
-    const fetchPriorities = async () => {
-      try {
-        const response = await axiosInstance.get('/priorities');
-        const normalizedPriorities = (response.data || []).map(p => ({
-          id: p.id,
-          name: p.name.replace('Heigh', 'High')
-        }));
-        setPriorities(normalizedPriorities);
-      } catch (error) {
-        console.error('Error fetching priorities:', error);
+    const validateTicket = async () => {
+      if (!ticket.id) {
+        setTicketExists(false);
         Swal.fire({
-          title: 'Error',
+          title: 'Invalid Ticket',
           icon: 'error',
-          text: 'Failed to load priorities.'
-        });
+          text: 'No valid ticket ID provided.',
+          confirmButtonText: 'Return to Tickets',
+          allowOutsideClick: false,
+        }).then(() => onClose());
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        await axiosInstance.get(`/tickets/${ticket.id}`);
+        setTicketExists(true);
+      } catch (error) {
+        console.error('Error validating ticket:', error.response?.data || error.message);
+        setTicketExists(false);
+        Swal.fire({
+          title: 'Ticket Not Found',
+          icon: 'error',
+          text: `The ticket with ID ${ticket.id} does not exist.`,
+          confirmButtonText: 'Return to Tickets',
+          allowOutsideClick: false,
+        }).then(() => onClose());
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchPriorities();
-  }, []);
+
+    validateTicket();
+  }, [ticket.id, onClose]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleUpdate = async () => {
-    if (!formData.id || !formData.title || !formData.description || !formData.assignedTo || !formData.priority) {
+    if (!ticketExists) {
       Swal.fire({
-        title: 'Validation Error',
+        title: 'Cannot Update',
         icon: 'error',
-        text: 'ID, Title, Description, Assignee, and Priority are required!'
-      });
+        text: 'This ticket no longer exists.',
+        confirmButtonText: 'Return to Tickets',
+      }).then(() => onClose());
       return;
     }
+
+    // if (!formData.id || !formData.title || !formData.description || !formData.assignedTo || !formData.priority) {
+    //   Swal.fire({
+    //     title: 'Validation Error',
+    //     icon: 'error',
+    //     text: 'ID, Title, Description, Assignee, and Priority are required!',
+    //   });
+    //   return;
+    // }
 
     setIsLoading(true);
     try {
@@ -347,44 +507,64 @@ const TicketDetails = ({ ticket, onClose }) => {
         description: formData.description,
         status: formData.status,
         assignedTo: parseInt(formData.assignedTo),
-        priority: parseInt(formData.priority)
+        priorityId: parseInt(formData.priority),
       };
-      console.log('Updating ticket with payload:', payload);
       const response = await axiosInstance.put(`/tickets/${ticket.id}`, payload);
       Swal.fire({
         title: 'Success',
         icon: 'success',
-        text: 'Ticket updated successfully!'
+        text: 'Ticket updated successfully!',
       });
       setFormData({
         id: response.data.id,
         title: response.data.title,
         description: response.data.description,
         status: response.data.status,
-        assignedTo: assigneeMap[response.data.assignedToDep?.toLowerCase()] || response.data.assignedTo?.toString(),
-        priority: response.data.priority?.toString() || ''
+        assignedTo: response.data.assignedTo?.toString() || '',
+        priority: response.data.priorityId?.toString() || '',
       });
       setIsEditing(false);
     } catch (error) {
       console.error('Update error:', error.response?.data || error.message);
-      Swal.fire({
-        title: 'Error',
-        icon: 'error',
-        text: error.response?.data?.message || 'Failed to update ticket.'
-      });
+      if (error.response?.status === 404) {
+        setTicketExists(false);
+        Swal.fire({
+          title: 'Ticket Not Found',
+          icon: 'error',
+          text: `The ticket with ID ${ticket.id} was not found.`,
+          confirmButtonText: 'Return to Tickets',
+          allowOutsideClick: false,
+        }).then(() => onClose());
+      } else {
+        Swal.fire({
+          title: 'Error',
+          icon: 'error',
+          text: error.response?.data?.message || 'Failed to update ticket.',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async () => {
+    if (!ticketExists) {
+      Swal.fire({
+        title: 'Cannot Delete',
+        icon: 'error',
+        text: 'This ticket no longer exists.',
+        confirmButtonText: 'Return to Tickets',
+      }).then(() => onClose());
+      return;
+    }
+
     const confirm = await Swal.fire({
       title: 'Are you sure?',
       text: 'This action cannot be undone.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'No, keep it'
+      cancelButtonText: 'No, keep it',
     });
 
     if (confirm.isConfirmed) {
@@ -394,16 +574,27 @@ const TicketDetails = ({ ticket, onClose }) => {
         Swal.fire({
           title: 'Deleted',
           icon: 'success',
-          text: 'Ticket deleted successfully!'
+          text: 'Ticket deleted successfully!',
         });
         onClose();
       } catch (error) {
         console.error('Delete error:', error.response?.data || error.message);
-        Swal.fire({
-          title: 'Error',
-          icon: 'error',
-          text: error.response?.data?.message || 'Failed to delete ticket.'
-        });
+        if (error.response?.status === 404) {
+          setTicketExists(false);
+          Swal.fire({
+            title: 'Ticket Not Found',
+            icon: 'error',
+            text: `The ticket with ID ${ticket.id} was not found.`,
+            confirmButtonText: 'Return to Tickets',
+            allowOutsideClick: false,
+          }).then(() => onClose());
+        } else {
+          Swal.fire({
+            title: 'Error',
+            icon: 'error',
+            text: error.response?.data?.message || 'Failed to delete ticket.',
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -411,8 +602,13 @@ const TicketDetails = ({ ticket, onClose }) => {
   };
 
   const getPriorityName = (priorityId) => {
-    const priority = priorities.find(p => p.id === parseInt(priorityId));
+    const priority = priorities.find((p) => p.id === parseInt(priorityId));
     return priority ? priority.name : 'Not set';
+  };
+
+  const getAssigneeName = (assignedTo) => {
+    const user = users.find((u) => u.id === parseInt(assignedTo));
+    return user ? user.username : 'Not assigned';
   };
 
   const modalStyle = {
@@ -425,7 +621,7 @@ const TicketDetails = ({ ticket, onClose }) => {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2000
+    zIndex: 2000,
   };
 
   const detailsContainerStyle = {
@@ -434,20 +630,20 @@ const TicketDetails = ({ ticket, onClose }) => {
     padding: '20px',
     width: '600px',
     maxHeight: '80vh',
-    overflowY: 'auto'
+    overflowY: 'auto',
   };
 
   const labelStyle = {
     fontSize: '14px',
     fontWeight: 'bold',
     color: '#172b4d',
-    marginBottom: '5px'
+    marginBottom: '5px',
   };
 
   const valueStyle = {
     fontSize: '14px',
     color: '#172b4d',
-    marginBottom: '15px'
+    marginBottom: '15px',
   };
 
   const inputStyle = {
@@ -458,7 +654,7 @@ const TicketDetails = ({ ticket, onClose }) => {
     fontSize: '14px',
     fontWeight: 'bold',
     color: '#172b4d',
-    marginBottom: '15px'
+    marginBottom: '15px',
   };
 
   const buttonStyle = {
@@ -472,23 +668,40 @@ const TicketDetails = ({ ticket, onClose }) => {
     marginRight: '10px',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px'
+    gap: '8px',
   };
 
   const disabledButtonStyle = {
     ...buttonStyle,
     backgroundColor: '#cccccc',
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
   };
 
-  console.log('Ticket prop:', ticket);
+  if (isLoading && !isEditing) {
+    return (
+      <div style={modalStyle}>
+        <div style={detailsContainerStyle}>
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <CircularProgress />
+            <p style={{ color: '#172b4d', marginTop: '10px' }}>Loading ticket details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ticketExists) {
+    return null; // Modal will close via Swal
+  }
 
   return (
     <div style={modalStyle}>
       <div style={detailsContainerStyle}>
         {isEditing ? (
           <>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>Edit Ticket</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>
+              Edit Ticket
+            </h2>
             <label style={labelStyle}>ID</label>
             <input
               type="text"
@@ -518,20 +731,32 @@ const TicketDetails = ({ ticket, onClose }) => {
             <label style={labelStyle}>Status</label>
             <select name="status" value={formData.status} onChange={handleChange} style={inputStyle} disabled={isLoading}>
               <option value="OPEN">OPEN</option>
-              <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
               <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
-              <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
+              <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
               <option value="UNDER REVIEW">UNDER REVIEW</option>
+              <option value="COMPLETED">COMPLETED</option>
             </select>
             <label style={labelStyle}>Assignee *</label>
-            <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle} disabled={isLoading}>
-              <option value="1">Sumit Kumar</option>
-              <option value="2">Abhishek</option>
-              <option value="3">Taleem</option>
-              <option value="4">JB</option>
+            <select
+              name="assignedTo"
+              value={formData.assignedTo}
+              onChange={handleChange}
+              style={inputStyle}
+              disabled={isLoading}
+            >
+              <option value="" disabled>Select Assignee</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>{user.username}</option>
+              ))}
             </select>
             <label style={labelStyle}>Priority *</label>
-            <select name="priority" value={formData.priority} onChange={handleChange} style={inputStyle} disabled={isLoading}>
+            <select
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              style={inputStyle}
+              disabled={isLoading}
+            >
               <option value="" disabled>Select Priority</option>
               {priorities.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -557,13 +782,15 @@ const TicketDetails = ({ ticket, onClose }) => {
           </>
         ) : (
           <>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>{ticket.title || 'No Title'}</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>
+              {ticket.title || 'No Title'}
+            </h2>
             <div style={labelStyle}>Key</div>
             <div style={valueStyle}>{ticket.id || 'N/A'}</div>
             <div style={labelStyle}>Description</div>
             <div style={valueStyle}>{ticket.description || 'No description provided'}</div>
             <div style={labelStyle}>Assigned To</div>
-            <div style={valueStyle}>{reverseAssigneeMap[assigneeMap[ticket.assignedTo?.toLowerCase()]] || ticket.assignedTo || 'Not assigned'}</div>
+            <div style={valueStyle}>{getAssigneeName(ticket.assignedTo)}</div>
             <div style={labelStyle}>Status</div>
             <div style={valueStyle}>{ticket.status || 'N/A'}</div>
             <div style={labelStyle}>Priority</div>
@@ -601,4 +828,4 @@ const TicketDetails = ({ ticket, onClose }) => {
   );
 };
 
-export default TicketDetails; 
+export default TicketDetails;
