@@ -178,11 +178,13 @@
 
 // export default TicketForm;
 
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
 
-const TicketForm = ({ onClose, onCreate }) => {
+const CreateTicket = ({ onClose, onCreate }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -229,7 +231,7 @@ const TicketForm = ({ onClose, onCreate }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.description || !formData.assignedTo) {
+    if (!formData.title || !formData.description || !formData.assignedToDep) {
       Swal.fire({
         title: 'Validation Error',
         icon: 'error',
@@ -242,7 +244,7 @@ const TicketForm = ({ onClose, onCreate }) => {
       const response = await axiosInstance.post('/tickets', {
         title: formData.title,
         description: formData.description,
-        assignedTo: formData.assignedTo,
+        assignedTo: formData.assignedToDep,
       });
 
       const newTicket = response.data;
@@ -326,9 +328,22 @@ const TicketForm = ({ onClose, onCreate }) => {
         <label style={labelStyle}>Description *</label>
         <textarea name="description" value={formData.description} onChange={handleChange} rows="4" style={{ ...inputStyle, resize: 'none' }} />
         <label style={labelStyle}>Assignee *</label>
-        <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle}>
+        <select name="assignedToDep" value={formData.assignedToDep} onChange={handleChange} style={inputStyle}>
           <option value="1">Sumit Kumar</option>
+          <option value="2">Abhishek</option>
+          <option value="3">Taleem</option>
+          <option value="4">JB</option>
         </select>
+        
+{/* <label style={labelStyle}>Status</label>
+        <select name="status" value={formData.status} onChange={handleChange} style={inputStyle}>
+         <option value="WAITING FOR SUPPORT">OPEN</option>
+          <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
+         <option value="WAITING FOR APPROVAL">WAITING FOR SUPPORT</option>
+            <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
+<option value="UNDER REVIEW">UNDER REVIEW</option>
+        </select>  */}
+
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button style={buttonStyle} onClick={handleSubmit}>Create</button>
           <button style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }} onClick={onClose}>Cancel</button>
@@ -338,4 +353,4 @@ const TicketForm = ({ onClose, onCreate }) => {
   );
 };
 
-export default TicketForm;
+export default CreateTicket;

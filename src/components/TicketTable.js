@@ -378,7 +378,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets }) => {
                   <td style={cellStyle}>{ticket.type}</td>
                   <td style={cellStyle}>{ticket.title}</td>
                   <td style={cellStyle}>{ticket.description.slice(0,20)}</td>
-                  <td style={cellStyle}>{ticket.assignedTo}</td>
+                  <td style={cellStyle}>{ticket.assignedToDep}</td>
                   <td style={cellStyle}>{ticket.status}</td>
                   <td style={cellStyle}>{ticket.createdAt}</td>
                   <td style={cellStyle}>{ticket.id}</td>

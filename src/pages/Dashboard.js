@@ -1291,7 +1291,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import TicketTable from '../components/TicketTable';
-import TicketForm from '../components/TicketForm';
+import CreateTicket from '../components/CreateTicket';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
 

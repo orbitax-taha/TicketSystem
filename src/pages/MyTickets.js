@@ -70,7 +70,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import TicketTable from '../components/TicketTable';
-import TicketForm from '../components/TicketForm';
+import CreateTicket from '../components/CreateTicket';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
@@ -88,13 +88,13 @@ const MyTickets = ({ setCurrentPage }) => {
       const transformedTickets = ticketData.map(ticket => ({
         type: 'Request', // Default since API doesn't provide this
         title: ticket.title,
-        id: ticket.id,
         description: ticket.description,
-        reporter: 'Unknown', // Default since API doesn't provide this
-        assignedTo: ticket.assignedTo || 'Unassigned',
+        // reporter: 'Unknown', // Default since API doesn't provide this
+        assignedTo: ticket.assignedToDep || 'Unassigned',
         status: ticket.status,
         createdAt: new Date(ticket.createdAt).toLocaleDateString('en-GB'),
-        timeToResolve: ticket.resolvedAt ? 'Resolved' : '0m',
+        // timeToResolve: ticket.resolvedAt ? 'Resolved' : '0m',
+        id: ticket.id,
       }));
       setTickets(transformedTickets);
     } catch (error) {
@@ -120,8 +120,8 @@ const MyTickets = ({ setCurrentPage }) => {
       title: newTicket.title,
       id: newTicket.id,
       description: newTicket.description,
-      reporter: 'Unknown',
-      assignedTo: newTicket.assignedTo || 'Unassigned',
+      // reporter: 'Unknown',
+      assignedTo: newTicket.assignedToDep || 'Unassigned',
       status: newTicket.status || 'OPEN',
       createdAt: new Date(newTicket.createdAt || Date.now()).toLocaleDateString('en-GB'),
       timeToResolve: newTicket.resolvedAt ? 'Resolved' : '0m',
@@ -145,7 +145,7 @@ const MyTickets = ({ setCurrentPage }) => {
           </ErrorBoundary>
         )}
         {showTicketForm && (
-          <TicketForm onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
+          <CreateTicket onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
         )}
       </div>
     </div>
