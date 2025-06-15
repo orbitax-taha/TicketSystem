@@ -17,6 +17,7 @@ const Header = ({ setShowTicketForm }) => {
       <style>
         {`
           .header {
+            margin-left:40px;
             position: fixed;
             top: 0;
             left: 210px;

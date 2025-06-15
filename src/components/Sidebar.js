@@ -123,11 +123,12 @@ const Sidebar = () => {
 
   const menuItems = {
     projects: [
-      { path: '/dashboard', label: 'Status', icon: <path d="M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.35-4.35" /> },
+      // { path: '/dashboard', label: 'Status', icon: <path d="M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.35-4.35" /> },
+      { path: '/dashboard', label: 'Overview', icon: <path d="M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.35-4.35" /> },
       { path: '/my-tickets', label: 'My Tickets', icon: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 14l-4-4h8l-4 4z" /> },
-      { path: '/queues', label: 'Queues', icon: <path d="M12 20V10M5 15l7-7 7 7M4 20h16" /> },
-      { path: '/incident', label: 'Incidents', icon: <><circle cx="12" cy="12" r="10" /><path d="M12 6v6h6" /></> },
-      { path: '/problems', label: 'Problems', icon: <path d="M12 2v20M2 12h20" /> },
+      { path: '/queues', label: 'Kanban', icon: <path d="M12 20V10M5 15l7-7 7 7M4 20h16" /> },
+      // { path: '/incident', label: 'Incidents', icon: <><circle cx="12" cy="12" r="10" /><path d="M12 6v6h6" /></> },
+      // { path: '/problems', label: 'Problems', icon: <path d="M12 2v20M2 12h20" /> },
       { path: '/changes', label: 'Changes', icon: <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z" /> },
     ],
     operations: [
