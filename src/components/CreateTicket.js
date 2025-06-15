@@ -1,49 +1,79 @@
-// import React, { useState } from 'react';
+
+
+// import React, { useState, useEffect, useRef } from 'react';
 // import Swal from 'sweetalert2';
 // import axiosInstance from '../api/axiosInstance';
+// import { CircularProgress } from '@mui/material';
 
-// const TicketForm = ({ onClose, onCreate }) => {
+// const CreateTicket = ({ onClose, onCreate }) => {
 //   const [formData, setFormData] = useState({
-//     // type: 'Request',
-//     // summary: '',
-//     title:'',
+//     title: '',
 //     description: '',
-//     // reporter: 'Product-Manager',
-//     // assignee: 'Sammy-ServiceDesk',
-//     // status: 'WAITING FOR SUPPORT',
-//     // created: new Date().toLocaleDateString('en-GB'), // Default value, can be overridden by backend
-//     // timeToResolve: '0m' // Default value, can be overridden by backend
+//     assignedTo: '1', // Default value as per your code
+//     priorityName: '' // Initialize priorityName
 //   });
+//   const [isLoading, setIsLoading] = useState(false); // Loading state
+
+//   const modalRef = useRef(null);
+//   const firstFocusableElementRef = useRef(null);
+//   const lastFocusableElementRef = useRef(null);
+
+//   useEffect(() => {
+//     const focusableElements = modalRef.current.querySelectorAll(
+//       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+//     );
+//     const firstElement = focusableElements[0];
+//     const lastElement = focusableElements[focusableElements.length - 1];
+
+//     firstFocusableElementRef.current = firstElement;
+//     lastFocusableElementRef.current = lastElement;
+
+//     firstElement.focus();
+
+//     const handleKeyDown = (e) => {
+//       if (e.key === 'Tab') {
+//         if (e.shiftKey && document.activeElement === firstElement) {
+//           e.preventDefault();
+//           lastElement.focus();
+//         } else if (!e.shiftKey && document.activeElement === lastElement) {
+//           e.preventDefault();
+//           firstElement.focus();
+//         }
+//       }
+//       if (e.key === 'Escape') {
+//         onClose();
+//       }
+//     };
+
+//     document.addEventListener('keydown', handleKeyDown);
+//     return () => document.removeEventListener('keydown', handleKeyDown);
+//   }, [onClose]);
 
 //   const handleChange = (e) => {
 //     setFormData({ ...formData, [e.target.name]: e.target.value });
 //   };
 
 //   const handleSubmit = async () => {
-//     if (!formData.title || !formData.description) {
+//     if (!formData.title || !formData.description || !formData.assignedTo || !formData.priorityName) {
 //       Swal.fire({
 //         title: 'Validation Error',
 //         icon: 'error',
-//         text: 'Summary and Description are required!'
+//         text: 'Title, Description, Assignee, and Priority are required!'
 //       });
 //       return;
 //     }
 
+//     setIsLoading(true); // Start loading
+
 //     try {
 //       const response = await axiosInstance.post('/tickets', {
-//         // type: formData.type,
-//         // summary: formData.summary,
 //         title: formData.title,
 //         description: formData.description,
-//         // reporter: formData.reporter,
-//         // assignee: formData.assignee,
-//         // status: formData.status,
-//         // created: formData.created,
-//         // timeToResolve: formData.timeToResolve
+//         assignedTo: formData.assignedTo,
+//         priorityName: formData.priorityName
 //       });
 
-//       const newTicket = response.data; // Assuming the API returns the created ticket
-
+//       const newTicket = response.data;
 //       onCreate(newTicket);
 //       Swal.fire({
 //         title: 'Success',
@@ -57,6 +87,8 @@
 //         icon: 'error',
 //         text: error.message || 'Failed to create ticket.'
 //       });
+//     } finally {
+//       setIsLoading(false); // Stop loading
 //     }
 //   };
 
@@ -110,92 +142,111 @@
 //     border: 'none',
 //     borderRadius: '4px',
 //     cursor: 'pointer',
-//     marginRight: '10px'
+//     marginRight: '10px',
+//     display: 'flex',
+//     alignItems: 'center',
+//     gap: '8px' // Space between spinner and text
+//   };
+
+//   const disabledButtonStyle = {
+//     ...buttonStyle,
+//     backgroundColor: '#cccccc',
+//     cursor: 'not-allowed'
 //   };
 
 //   return (
-//     <div style={modalStyle}>
-//       <div style={formContainerStyle}>
-//         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>Create New Ticket</h2>
-//         {/* <label style={labelStyle}>Type</label>
-//         <select name="type" value={formData.type} onChange={handleChange} style={inputStyle}> */}
-//           {/* <option value="Request">Request</option>
-//           <option value="Report a system problem">Report a system problem</option>
-//           <option value="Broken hardware">Broken hardware</option>
-//           <option value="Get a guest wifi account">Get a guest wifi account</option>
-//           <option value="Request new software">Request new software</option>
-//           <option value="Request new hardware">Request new hardware</option>
-//           <option value="Request mobile device">Request mobile device</option>
-//           <option value="Get IT help">Get IT help</option> */}
-//         {/* </select>
-//         <label style={labelStyle}>Summary *</label>
-//         <input type="text" name="summary" value={formData.summary} onChange={handleChange} style={inputStyle} />
-//          </select> */}
+//     <div style={modalStyle} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+//       <div style={formContainerStyle} ref={modalRef}>
+//         <h2 id="modal-title" style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>
+//           Create New Ticket
+//         </h2>
 //         <label style={labelStyle}>Title *</label>
-//         <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} />
+//         <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} disabled={isLoading} />
 //         <label style={labelStyle}>Description *</label>
-//         <textarea name="description" value={formData.description} onChange={handleChange} rows="4" style={{ ...inputStyle, resize: 'none' }} />
-      
-
-  
-//         <label style={labelStyle}>Assignee</label>
-//         <select name="assignee" value={formData.assignee} onChange={handleChange} style={inputStyle}>
+//         <textarea
+//           name="description"
+//           value={formData.description}
+//           onChange={handleChange}
+//           rows="4"
+//           style={{ ...inputStyle, resize: 'none' }}
+//           disabled={isLoading}
+//         />
+//         <label style={labelStyle}>Assignee *</label>
+//         <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle} disabled={isLoading}>
 //           <option value="1">Sumit Kumar</option>
-       
+//           <option value="2">Abhishek</option>
+//           <option value="3">Taleem</option>
+//           <option value="4">JB</option>
 //         </select>
-
-//         {/* <label style={labelStyle}>Reporter</label>
-//         <select name="reporter" value={formData.reporter} onChange={handleChange} style={inputStyle}>
-//           <option value="Product-Manager">Product-Manager</option>
-//           <option value="ServiceDesk-Manager">ServiceDesk-Manager</option>
-//           <option value="Developer">Developer</option>
-//           <option value="ServiceDesk-Agent">ServiceDesk-Agent</option>
-//           <option value="Data-Developer">Data-Developer</option>
-//           <option value="Change-Manager">Change-Manager</option>
-//           <option value="Carly-Chief-Exec">Carly-Chief-Exec</option>
+//         <label style={labelStyle}>Priority *</label>
+//         <select name="priorityName" value={formData.priorityName} onChange={handleChange} style={inputStyle} disabled={isLoading}>
+//           <option value="" disabled>Select Priority</option>
+//           <option value="Low">Low</option>
+//           <option value="Moderate">Moderate</option>
+//           <option value="High">High</option>
 //         </select>
-//         <label style={labelStyle}>Assignee</label>
-//         <select name="assignee" value={formData.assignee} onChange={handleChange} style={inputStyle}>
-//           <option value="Sammy-ServiceDesk">Sammy-ServiceDesk</option>
-//           <option value="Serena-ServiceDesk">Serena-ServiceDesk</option>
-//           <option value="Christy-ServiceDesk">Christy-ServiceDesk</option>
-//         </select>
-//         <label style={labelStyle}>Status</label>
-//         <select name="status" value={formData.status} onChange={handleChange} style={inputStyle}>
-//           <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
-//           <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
-//           <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
-//           <option value="UNDER REVIEW">UNDER REVIEW</option>
-//         </select> */}
 //         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-//           <button style={buttonStyle} onClick={handleSubmit}>Create</button>
-//           <button style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }} onClick={onClose}>Cancel</button>
+//           <button
+//             style={isLoading ? disabledButtonStyle : buttonStyle}
+//             onClick={handleSubmit}
+//             disabled={isLoading}
+//           >
+//             {isLoading && <CircularProgress size={20} color="inherit" />}
+//             {isLoading ? 'Creating...' : 'Create'}
+//           </button>
+//           <button
+//             style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }}
+//             onClick={onClose}
+//             disabled={isLoading}
+//           >
+//             Cancel
+//           </button>
 //         </div>
 //       </div>
 //     </div>
 //   );
 // };
 
-// export default TicketForm;
-
-
+// export default CreateTicket;
 
 import React, { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
+import { CircularProgress } from '@mui/material';
 
 const CreateTicket = ({ onClose, onCreate }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    assignedTo: '1', // Default value as per your code
+    assignedTo: '1',
+    priority: ''
   });
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [priorities, setPriorities] = useState([]);
   const modalRef = useRef(null);
   const firstFocusableElementRef = useRef(null);
   const lastFocusableElementRef = useRef(null);
 
   useEffect(() => {
+    const fetchPriorities = async () => {
+      try {
+        const response = await axiosInstance.get('/priorities');
+        const normalizedPriorities = (response.data || []).map(p => ({
+          id: p.id,
+          name: p.name.replace('Heigh', 'High') // Normalize typos
+        }));
+        setPriorities(normalizedPriorities);
+      } catch (error) {
+        console.error('Error fetching priorities:', error);
+        Swal.fire({
+          title: 'Error',
+          icon: 'error',
+          text: 'Failed to load priorities.'
+        });
+      }
+    };
+    fetchPriorities();
+
     const focusableElements = modalRef.current.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
@@ -231,24 +282,24 @@ const CreateTicket = ({ onClose, onCreate }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.description || !formData.assignedToDep) {
+    if (!formData.title || !formData.description || !formData.assignedTo || !formData.priority) {
       Swal.fire({
         title: 'Validation Error',
         icon: 'error',
-        text: 'Title, Description, and Assignee are required!'
+        text: 'Title, Description, Assignee, and Priority are required!'
       });
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await axiosInstance.post('/tickets', {
         title: formData.title,
         description: formData.description,
-        assignedTo: formData.assignedToDep,
+        assignedTo: parseInt(formData.assignedTo),
+        priority: parseInt(formData.priority)
       });
-
-      const newTicket = response.data;
-      onCreate(newTicket);
+      onCreate(response.data);
       Swal.fire({
         title: 'Success',
         icon: 'success',
@@ -256,11 +307,14 @@ const CreateTicket = ({ onClose, onCreate }) => {
       });
       onClose();
     } catch (error) {
+      console.error('Create error:', error.response?.data || error.message);
       Swal.fire({
         title: 'Error',
         icon: 'error',
-        text: error.message || 'Failed to create ticket.'
+        text: error.response?.data?.message || 'Failed to create ticket.'
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -314,7 +368,16 @@ const CreateTicket = ({ onClose, onCreate }) => {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    marginRight: '10px'
+    marginRight: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  };
+
+  const disabledButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#cccccc',
+    cursor: 'not-allowed'
   };
 
   return (
@@ -324,29 +387,46 @@ const CreateTicket = ({ onClose, onCreate }) => {
           Create New Ticket
         </h2>
         <label style={labelStyle}>Title *</label>
-        <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} />
+        <input type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} disabled={isLoading} />
         <label style={labelStyle}>Description *</label>
-        <textarea name="description" value={formData.description} onChange={handleChange} rows="4" style={{ ...inputStyle, resize: 'none' }} />
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          rows="4"
+          style={{ ...inputStyle, resize: 'none' }}
+          disabled={isLoading}
+        />
         <label style={labelStyle}>Assignee *</label>
-        <select name="assignedToDep" value={formData.assignedToDep} onChange={handleChange} style={inputStyle}>
+        <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} style={inputStyle} disabled={isLoading}>
           <option value="1">Sumit Kumar</option>
           <option value="2">Abhishek</option>
           <option value="3">Taleem</option>
           <option value="4">JB</option>
         </select>
-        
-{/* <label style={labelStyle}>Status</label>
-        <select name="status" value={formData.status} onChange={handleChange} style={inputStyle}>
-         <option value="WAITING FOR SUPPORT">OPEN</option>
-          <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
-         <option value="WAITING FOR APPROVAL">WAITING FOR SUPPORT</option>
-            <option value="WAITING FOR APPROVAL">WAITING FOR APPROVAL</option>
-<option value="UNDER REVIEW">UNDER REVIEW</option>
-        </select>  */}
-
+        <label style={labelStyle}>Priority *</label>
+        <select name="priority" value={formData.priority} onChange={handleChange} style={inputStyle} disabled={isLoading}>
+          <option value="" disabled>Select Priority</option>
+          {priorities.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button style={buttonStyle} onClick={handleSubmit}>Create</button>
-          <button style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }} onClick={onClose}>Cancel</button>
+          <button
+            style={isLoading ? disabledButtonStyle : buttonStyle}
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading && <CircularProgress size={20} color="inherit" />}
+            {isLoading ? 'Creating...' : 'Create'}
+          </button>
+          <button
+            style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }}
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
