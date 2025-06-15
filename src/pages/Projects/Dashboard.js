@@ -131,18 +131,18 @@ const Dashboard = () => {
 
   const statusGradients = {
     OPEN: 'linear-gradient(135deg, #4CAF50, #81C784)',
-    'WORK IN PROGRESS': 'linear-gradient(135deg, #2196F3, #64B5F6)',
+    'IN_PROGRESS': 'linear-gradient(135deg, #2196F3, #64B5F6)',
     'WAITING FOR SUPPORT': 'linear-gradient(135deg, #FFC107, #FFD54F)',
-    'UNDER REVIEW': 'linear-gradient(135deg, #F44336, #EF5350)',
-    COMPLETED: 'linear-gradient(135deg, #9C27B0, #AB47BC)',
+    'RESOLVED': 'linear-gradient(135deg, #F44336, #EF5350)',
+    CLOSED: 'linear-gradient(135deg, #9C27B0, #AB47BC)',
   };
 
   const statusColors = {
     OPEN: '#4CAF50',
-    'WORK IN PROGRESS': '#2196F3',
+    'IN_PROGRESS': '#2196F3',
     'WAITING FOR SUPPORT': '#FFC107',
-    'UNDER REVIEW': '#F44336',
-    COMPLETED: '#9C27B0',
+    'RESOLVED': '#F44336',
+    CLOSED: '#9C27B0',
   };
 
   const statusIcons = {
@@ -151,7 +151,7 @@ const Dashboard = () => {
         <path d="M20 6L9 17l-5-5" />
       </svg>
     ),
-    'WORK IN PROGRESS': (
+    'IN_PROGRESS': (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
         <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 14l-4-4h8l-4 4z" />
       </svg>
@@ -161,12 +161,12 @@ const Dashboard = () => {
         <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
       </svg>
     ),
-    'UNDER REVIEW': (
+    'RESOLVED': (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
         <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 15l-4-4 1.5-1.5L11 14l5-5 1.5 1.5L11 17z" />
       </svg>
     ),
-    COMPLETED: (
+    CLOSED: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
         <circle cx="11" cy="11" r="8" />
         <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -281,7 +281,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  const statusList = ['OPEN', 'WORK IN PROGRESS', 'WAITING FOR SUPPORT', 'UNDER REVIEW', 'COMPLETED'];
+  const statusList = ['OPEN', 'IN_PROGRESS', 'WAITING FOR SUPPORT', 'RESOLVED', 'CLOSED'];
 
   return (
     <div style={{ display: 'flex', width: '100%', overflowX: 'hidden' }}>
