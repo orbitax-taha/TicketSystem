@@ -284,7 +284,7 @@ const Dashboard = () => {
   const statusList = ['OPEN', 'IN_PROGRESS', 'WAITING FOR SUPPORT', 'RESOLVED', 'CLOSED'];
 
   return (
-    <div style={{ display: 'flex', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ display: 'flex', width: '100%', overflowX: 'hidden' , marginLeft:"25px"}}>
       <Sidebar />
       <div
         style={{
@@ -309,7 +309,7 @@ const Dashboard = () => {
             }}
           >
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>
-              Dashboard Summary
+              Ticket Status Overview
             </h2>
             <div style={summaryStyle}>
               {statusList.map((status, idx) => {

@@ -397,12 +397,12 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
   };
 
   const inputStyle = {
-    padding: '8px',
+    padding: '6px',
     border: '1px solid #dfe1e6',
     borderRadius: '4px',
     fontSize: '14px',
     color: '#172b4d',
-    width: '100%',
+    width: '600px',
   };
 
   const tableContainerStyle = {
@@ -441,7 +441,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', marginTop: '60px', marginLeft: '250px' }}>
-      <div style={headerStyle}>PROJECTS / ITSM Service Desk / My Tickets</div>
+      <div style={headerStyle}>My Tickets</div>
       <div style={filterRowStyle}>
         <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#172b4d' }}>Search:</label>
         <input
