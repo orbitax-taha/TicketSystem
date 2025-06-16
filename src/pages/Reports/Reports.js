@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
@@ -11,7 +9,7 @@ import axiosInstance from '../../api/axiosInstance';
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
-const Reports = ({ setCurrentPage , logout}) => {
+const Reports = ({ setCurrentPage, logout }) => {
   const [showTicketForm, setShowTicketForm] = useState(false);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,12 +21,13 @@ const Reports = ({ setCurrentPage , logout}) => {
       try {
         const response = await axiosInstance.get('/tickets');
         console.log('API Response:', response.data);
-        const ticketData = Array.isArray(response.data.data) ? response.data.data : response.data;
-        setTickets(Array.isArray(ticketData) ? ticketData : []);
+        const ticketData = Array.isArray(response.data.data) ? response.data.data : [];
+        setTickets(ticketData);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch tickets. Please try again later.');
         setLoading(false);
+        console.error('Error fetching tickets:', err);
       }
     };
     fetchTickets();
@@ -80,55 +79,11 @@ const Reports = ({ setCurrentPage , logout}) => {
     };
   };
 
-  // Process data for Pie Chart (This Week's Ticket Status: June 9 - June 15, 2025)
-  // const weeklyTicketStatusData = () => {
-  //   const startOfWeek = new Date('2025-06-09T00:00:00Z');
-  //   const endOfWeek = new Date('2025-06-15T23:59:59Z');
-  //   const statusCounts = {
-  //     Open: 0,
-  //     'Work in Progress': 0,
-  //     'Under Review': 0,
-  //   };
-
-  //   if (Array.isArray(tickets)) {
-  //     tickets.forEach((ticket) => {
-  //       const ticketDate = new Date(ticket.createdAt);
-  //       if (ticketDate >= startOfWeek && ticketDate <= endOfWeek) {
-  //         const status = ticket.status || 'Unknown';
-  //         if (status in statusCounts) {
-  //           statusCounts[status] += 1;
-  //         } else {
-  //           statusCounts['Unknown'] = (statusCounts['Unknown'] || 0) + 1;
-  //         }
-  //       }
-  //     });
-  //   }
-
-  //   const labels = Object.keys(statusCounts).filter((key) => statusCounts[key] > 0);
-  //   const data = Object.values(statusCounts).filter((value) => value > 0);
-  //   const backgroundColors = labels.length === 0
-  //     ? ['#dfe1e6']
-  //     : ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
-
-  //   return {
-  //     labels: labels.length ? labels : ['No Data'],
-  //     datasets: [
-  //       {
-  //         label: 'Ticket Status',
-  //         data: data.length ? data : [1],
-  //         backgroundColor: backgroundColors,
-  //         borderColor: '#fff',
-  //         borderWidth: 2,
-  //         hoverOffset: 2,
-  //       },
-  //     ],
-  //   };
-  // };
-    // Process data for Pie Chart (This Week's Ticket Status: June 9 - June 15, 2025)
+  // Process data for Pie Chart (This Week's Ticket Status: June 16 - June 22, 2025)
   const weeklyTicketStatusData = () => {
-    const startOfWeek = new Date('2025-06-09T00:00:00Z');
-    const endOfWeek = new Date('2025-06-15T23:59:59Z');
-    
+    const startOfWeek = new Date('2025-06-16T00:00:00Z'); // Start of June 16
+    const endOfWeek = new Date('2025-06-22T23:59:59Z');   // End of June 22
+
     const statusCounts = {
       OPEN: 0,
       CLOSED: 0,
@@ -140,12 +95,12 @@ const Reports = ({ setCurrentPage , logout}) => {
     if (Array.isArray(tickets)) {
       tickets.forEach((ticket) => {
         const ticketDate = new Date(ticket.createdAt);
-        const status = (ticket.status || '').toUpperCase(); // Normalize status to uppercase
+        const status = (ticket.status || '').toUpperCase().replace('WAITING_FOR_SUPPORT', 'WAITING_FOR_SUPPORT'); // Normalize status
         if (ticketDate >= startOfWeek && ticketDate <= endOfWeek) {
           if (status in statusCounts) {
             statusCounts[status] += 1;
           } else {
-            statusCounts[status] = 1;
+            statusCounts[status] = 1; // Dynamically add new statuses
           }
         }
       });
@@ -167,7 +122,7 @@ const Reports = ({ setCurrentPage , logout}) => {
         {
           label: 'Ticket Status',
           data: data.length ? data : [1],
-          backgroundColor: backgroundColors.slice(0, labels.length),
+          backgroundColor: labels.length ? backgroundColors.slice(0, labels.length) : ['#dfe1e6'],
           borderColor: '#fff',
           borderWidth: 2,
           hoverOffset: 2,
@@ -176,12 +131,11 @@ const Reports = ({ setCurrentPage , logout}) => {
     };
   };
 
-
-  // Process data for Bar Graph (Daily Tickets, Last 7 Days: June 9 - June 15, 2025)
+  // Process data for Bar Graph (Daily Tickets, Last 7 Days: June 16 - June 22, 2025)
   const dailyTicketData = () => {
     const days = Array(7).fill(0);
     const labels = [];
-    const startDate = new Date('2025-06-09T00:00:00Z');
+    const startDate = new Date('2025-06-16T00:00:00Z'); // Start of June 16
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
@@ -192,11 +146,13 @@ const Reports = ({ setCurrentPage , logout}) => {
     if (Array.isArray(tickets)) {
       tickets.forEach((ticket) => {
         const ticketDate = new Date(ticket.createdAt);
-        const startOfPeriod = new Date('2025-06-09T00:00:00Z');
-        const endOfPeriod = new Date('2025-06-15T23:59:59Z');
+        const startOfPeriod = new Date('2025-06-16T00:00:00Z');
+        const endOfPeriod = new Date('2025-06-22T23:59:59Z');
         if (ticketDate >= startOfPeriod && ticketDate <= endOfPeriod) {
           const dayIndex = Math.floor((ticketDate - startOfPeriod) / (1000 * 60 * 60 * 24));
-          days[dayIndex] += 1;
+          if (dayIndex >= 0 && dayIndex < 7) {
+            days[dayIndex] += 1;
+          }
         }
       });
     }
@@ -228,7 +184,7 @@ const Reports = ({ setCurrentPage , logout}) => {
   // Chart options with enhanced styling
   const lineOptions = {
     responsive: true,
-    maintainAspectRatio: false, // Allow height to be controlled
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
@@ -272,7 +228,7 @@ const Reports = ({ setCurrentPage , logout}) => {
       },
       title: {
         display: true,
-        text: "This Week's Ticket Status (June 9 - June 15, 2025)",
+        text: "This Week's Ticket Status (June 16 - June 22, 2025)",
         font: { size: 16, family: 'Arial', weight: 'bold' },
         color: '#172b4d',
         padding: { top: 10, bottom: 20 },
@@ -295,7 +251,7 @@ const Reports = ({ setCurrentPage , logout}) => {
       },
       title: {
         display: true,
-        text: 'Daily Ticket Count (Last 7 Days)',
+        text: 'Daily Ticket Count (June 16 - June 22, 2025)',
         font: { size: 16, family: 'Arial', weight: 'bold' },
         color: '#172b4d',
         padding: { top: 10, bottom: 20 },
@@ -326,24 +282,15 @@ const Reports = ({ setCurrentPage , logout}) => {
   const chartContainerStyle = {
     backgroundColor: '#fff',
     borderRadius: '8px',
-    boxShadow: ' 3px 3px 3px 3px rgba(0, 0, 0, 0.29)',
+    boxShadow: '3px 3px 3px 3px rgba(0, 0, 0, 0.29)',
     padding: '20px',
     transition: 'transform 0.2s, box-shadow 0.2s',
     marginBottom: '20px',
   };
 
-  const chartContainerHoverStyle = {
-    transform: 'scale(0.95)',
-    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
-  };
-
   return (
-    <div style={{ display: 'flex' , marginLeft:"25px"}}>
-        <Header
-        setCurrentPage={setCurrentPage}
-        setShowTicketForm={() => {}}
-        logout={logout}
-      />
+    <div style={{ display: 'flex', marginLeft: '25px' }}>
+      <Header setCurrentPage={setCurrentPage} setShowTicketForm={() => {}} logout={logout} />
       <Sidebar setCurrentPage={setCurrentPage} currentPage="reports" />
       <div style={{ flex: 1, marginLeft: '210px', width: 'calc(100vw - 210px)' }}>
         <Header setShowTicketForm={setShowTicketForm} />
@@ -357,30 +304,18 @@ const Reports = ({ setCurrentPage , logout}) => {
               {/* Row for Bar Chart and Pie Chart */}
               <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', width: '100%' }}>
                 {/* Bar Graph: Daily Tickets */}
-                <div
-                  style={{ ...chartContainerStyle, flex: '2', width: '60%' }}
-                //   onMouseEnter={(e) => Object.assign(e.currentTarget.style, chartContainerHoverStyle)}
-                //   onMouseLeave={(e) => Object.assign(e.currentTarget.style, chartContainerStyle)}
-                >
+                <div style={{ ...chartContainerStyle, flex: '2', width: '60%' }}>
                   <Bar data={dailyTicketData()} options={barOptions} />
                 </div>
 
                 {/* Pie Chart: This Week's Ticket Status */}
-                <div
-                  style={{ ...chartContainerStyle, flex: '1', width: '40%' }}
-                //   onMouseEnter={(e) => Object.assign(e.currentTarget.style, chartContainerHoverStyle)}
-                //   onMouseLeave={(e) => Object.assign(e.currentTarget.style, chartContainerStyle)}
-                >
+                <div style={{ ...chartContainerStyle, flex: '1', width: '40%' }}>
                   <Pie data={weeklyTicketStatusData()} options={pieOptions} />
                 </div>
               </div>
 
               {/* Line Graph: Monthly Tickets (Full Width, Reduced Height) */}
-              <div
-                style={{ ...chartContainerStyle, width: '100%', height: '300px' }}
-                // onMouseEnter={(e) => Object.assign(e.currentTarget.style, chartContainerHoverStyle)}
-                // onMouseLeave={(e) => Object.assign(e.currentTarget.style, chartContainerStyle)}
-              >
+              <div style={{ ...chartContainerStyle, width: '100%', height: '300px' }}>
                 <Line data={monthlyTicketData()} options={lineOptions} height={300} />
               </div>
             </div>
