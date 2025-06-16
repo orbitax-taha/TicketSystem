@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
@@ -7,6 +10,12 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [ticketExists, setTicketExists] = useState(true);
+  const loggedInUser = localStorage.getItem('username') || 'admin';
+  const user = users.find((u) => u.username === loggedInUser);
+  const userRole = user ? user.role : 'Unknown';
+  const isAdmin = userRole === 'Admin';
+  const isClient = userRole === 'Client';
+  const canChangeStatus = !isClient; // All roles except Client can change status
 
   const [formData, setFormData] = useState({
     id: ticket.id || '',
@@ -54,10 +63,39 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
   }, [ticket.id, onClose]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (isAdmin || (canChangeStatus && name === 'status')) {
+      setFormData({ ...formData, [name]: value });
+    } else {
+      // Swal.fire({
+      //   title: 'Permission Denied',
+      //   icon: 'error',
+      //   text: isClient
+      //     ? 'Clients cannot edit tickets.'
+      //     : 'You can only change the ticket status.',
+      // });
+    }
   };
 
   const handleUpdate = async () => {
+    if (isClient) {
+      // Swal.fire({
+      //   title: 'Permission Denied',
+      //   icon: 'error',
+      //   text: 'Clients cannot edit tickets.',
+      // });
+      return;
+    }
+
+    if (!isAdmin && Object.keys(formData).some((key) => key !== 'status' && formData[key] !== ticket[key])) {
+      // Swal.fire({
+      //   title: 'Permission Denied',
+      //   icon: 'error',
+      //   text: 'You can only change the ticket status.',
+      // });
+      return;
+    }
+
     if (!ticketExists) {
       Swal.fire({
         title: 'Cannot Update',
@@ -68,18 +106,25 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
       return;
     }
 
-
-
     setIsLoading(true);
     try {
-      const payload = {
-        id: formData.id,
-        title: formData.title,
-        description: formData.description,
-        status: formData.status,
-        assignedTo: parseInt(formData.assignedTo),
-        priorityId: parseInt(formData.priority),
-      };
+      const payload = isAdmin
+        ? {
+            id: formData.id,
+            title: formData.title,
+            description: formData.description,
+            status: formData.status,
+            assignedTo: parseInt(formData.assignedTo),
+            priorityId: parseInt(formData.priority),
+          }
+        : {
+            id: formData.id,
+            title: ticket.title,
+            description: ticket.description,
+            status: formData.status,
+            assignedTo: parseInt(ticket.assignedTo || '0'),
+            priorityId: parseInt(ticket.priority || '0'),
+          };
       const response = await axiosInstance.put(`/tickets/${ticket.id}`, payload);
       Swal.fire({
         title: 'Success',
@@ -119,6 +164,15 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
   };
 
   const handleDelete = async () => {
+    if (!isAdmin) {
+      // Swal.fire({
+      //   title: 'Permission Denied',
+      //   icon: 'error',
+      //   text: 'Only admin users can delete tickets.',
+      // });
+      return;
+    }
+
     if (!ticketExists) {
       Swal.fire({
         title: 'Cannot Delete',
@@ -268,7 +322,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
   return (
     <div style={modalStyle}>
       <div style={detailsContainerStyle}>
-        {isEditing ? (
+        {isEditing && (isAdmin || canChangeStatus) ? (
           <>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#172b4d', marginBottom: '20px' }}>
               Edit Ticket
@@ -288,7 +342,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
               value={formData.title}
               onChange={handleChange}
               style={inputStyle}
-              disabled={isLoading}
+              disabled={isLoading || !isAdmin}
             />
             <label style={labelStyle}>Description *</label>
             <textarea
@@ -297,10 +351,16 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
               onChange={handleChange}
               rows="4"
               style={{ ...inputStyle, resize: 'none' }}
-              disabled={isLoading}
+              disabled={isLoading || !isAdmin}
             />
             <label style={labelStyle}>Status</label>
-            <select name="status" value={formData.status} onChange={handleChange} style={inputStyle} disabled={isLoading}>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              style={inputStyle}
+              disabled={isLoading || !canChangeStatus}
+            >
               <option value="OPEN">OPEN</option>
               <option value="WORK IN PROGRESS">WORK IN PROGRESS</option>
               <option value="WAITING FOR SUPPORT">WAITING FOR SUPPORT</option>
@@ -313,11 +373,15 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
               value={formData.assignedTo}
               onChange={handleChange}
               style={inputStyle}
-              disabled={isLoading}
+              disabled={isLoading || !isAdmin}
             >
-              <option value="" disabled>Select Assignee</option>
+              <option value="" disabled>
+                Select Assignee
+              </option>
               {users.map((user) => (
-                <option key={user.id} value={user.id}>{user.username}</option>
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
               ))}
             </select>
             <label style={labelStyle}>Priority *</label>
@@ -326,11 +390,15 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
               value={formData.priority}
               onChange={handleChange}
               style={inputStyle}
-              disabled={isLoading}
+              disabled={isLoading || !isAdmin}
             >
-              <option value="" disabled>Select Priority</option>
+              <option value="" disabled>
+                Select Priority
+              </option>
               {priorities.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
               ))}
             </select>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -369,7 +437,24 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
             <div style={labelStyle}>Created</div>
             <div style={valueStyle}>{ticket.createdAt || 'N/A'}</div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-    
+              {(isAdmin || canChangeStatus) && (
+                <button
+                  style={{ ...buttonStyle, backgroundColor: '#0052cc' }}
+                  onClick={() => setIsEditing(true)}
+                  disabled={isLoading}
+                >
+                  Edit
+                </button>
+              )}
+              {isAdmin && (
+                <button
+                  style={{ ...buttonStyle, backgroundColor: '#ff0000' }}
+                  onClick={handleDelete}
+                  disabled={isLoading}
+                >
+                  Delete
+                </button>
+              )}
               <button
                 style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }}
                 onClick={onClose}

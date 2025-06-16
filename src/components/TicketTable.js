@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Modal, Box, IconButton } from '@mui/material';
+import ImageIcon from '@mui/icons-material/Image';
+import CloseIcon from '@mui/icons-material/Close';
 
 const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, statuses, users }) => {
   const [filteredTickets, setFilteredTickets] = useState([]);
@@ -13,9 +16,15 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
   const [editFormData, setEditFormData] = useState({});
   const [originalFormData, setOriginalFormData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
   const rowsPerPage = 10;
-
   const loggedInUser = localStorage.getItem('username') || 'admin';
+  const user = users.find((u) => u.username === loggedInUser);
+  const userRole = user ? user.role : 'Unknown';
+  const isAdmin = userRole === 'Admin';
+  const isClient = userRole === 'Client';
+  const canChangeStatus = !isClient;
 
   useEffect(() => {
     const validTickets = Array.isArray(tickets) ? tickets : [];
@@ -26,11 +35,9 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
         (ticket) =>
           ticket.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           ticket.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           ticket.ticketCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               ticket.priorityName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                ticket.assignedToDep?.toLowerCase().includes(searchQuery.toLowerCase()) 
-
-
+          ticket.ticketCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          ticket.priorityName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          ticket.assignedToDep?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -84,6 +91,9 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
   };
 
   const handleRowClick = (ticket) => {
+    if (isClient) {
+      return;
+    }
     if (editingTicketId === ticket.id) {
       setEditingTicketId(null);
       setEditFormData({});
@@ -103,17 +113,27 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData({ ...editFormData, [name]: value });
+    if (isAdmin) {
+      const { name, value } = e.target;
+      setEditFormData({ ...editFormData, [name]: value });
+    }
   };
 
   const handleInputKeyDown = async (e, ticketId) => {
     if (e.key === 'Enter') {
+      if (isClient) {
+        return;
+      }
       const hasChanges = Object.keys(editFormData).some(
         (key) => editFormData[key] !== originalFormData[key]
       );
 
       if (!hasChanges) return;
+
+      if (!isAdmin && Object.keys(editFormData).some((key) => key !== 'status' && editFormData[key] !== originalFormData[key])) {
+        setEditFormData(originalFormData);
+        return;
+      }
 
       const result = await Swal.fire({
         title: 'Confirm Changes',
@@ -159,18 +179,27 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
 
         setIsLoading(true);
         try {
-          const payload = {
-            id: ticketId,
-            title: editFormData.title,
-            description: editFormData.description,
-            assignedTo: parseInt(editFormData.assignedTo),
-            assignedBy: loggedInUser,
-            priorityId: parseInt(editFormData.priority),
-            status: editFormData.status,
-          };
+          const payload = isAdmin
+            ? {
+                id: ticketId,
+                title: editFormData.title,
+                description: editFormData.description,
+                assignedTo: parseInt(editFormData.assignedTo),
+                assignedBy: loggedInUser,
+                priorityId: parseInt(editFormData.priority),
+                status: editFormData.status,
+              }
+            : {
+                id: ticketId,
+                title: originalFormData.title,
+                description: originalFormData.description,
+                assignedTo: parseInt(originalFormData.assignedTo),
+                assignedBy: loggedInUser,
+                priorityId: parseInt(originalFormData.priority),
+                status: editFormData.status,
+              };
           console.log('Update ticket payload:', payload);
-          // const response = await axiosInstance.put(`/tickets/${ticketId}`, payload);
-           const response = await axiosInstance.put(`/tickets/${ticketId}/updateTicket`, payload);
+          const response = await axiosInstance.put(`/tickets/${ticketId}/updateTicket`, payload);
           setTickets((prevTickets) =>
             prevTickets.map((ticket) =>
               ticket.id === ticketId
@@ -226,6 +255,12 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
 
   const handleSelectChange = async (e, ticketId) => {
     const { name, value } = e.target;
+    if (!isAdmin && name !== 'status') {
+      return;
+    }
+    if (isClient) {
+      return;
+    }
     const updatedData = { ...editFormData, [name]: value };
     setEditFormData(updatedData);
 
@@ -235,6 +270,11 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
 
     if (!hasChanges) return;
 
+    if (!isAdmin && Object.keys(updatedData).some((key) => key !== 'status' && updatedData[key] !== originalFormData[key])) {
+      setEditFormData(originalFormData);
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Confirm Changes',
       text: 'Would you like to save changes to this ticket?',
@@ -242,7 +282,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
       showCancelButton: true,
       confirmButtonText: 'Yes, Save',
       cancelButtonText: 'No, Revert',
-      buttonsStyling: false | false,
+      buttonsStyling: false,
       customClass: {
         confirmButton: 'swal-confirm-button',
         cancelButton: 'swal-cancel-button',
@@ -279,16 +319,13 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
 
       setIsLoading(true);
       try {
-        if (name === 'assignedTo') {
-          // Handle assignment using /tickets/{id}/assign API
+        if (name === 'assignedTo' && isAdmin) {
           const params = new URLSearchParams({
             userId: updatedData.assignedTo,
             assignedBy: loggedInUser,
           });
           console.log('Assign ticket params:', params.toString());
           const response = await axiosInstance.put(`/tickets/${ticketId}/assign?${params.toString()}`);
-
-          // Update the ticket state with the new assignedTo
           setTickets((prevTickets) =>
             prevTickets.map((ticket) =>
               ticket.id === ticketId
@@ -300,21 +337,24 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
             )
           );
         } else {
-          // Handle status and priority updates using /tickets/{id}/updatestatuspriority
           const statusId = statuses.find((s) => s.statusName === updatedData.status)?.id;
           if (!statusId) {
             throw new Error('Invalid status selected.');
           }
 
-          const payload = {
-            statusId: parseInt(statusId),
-            priorityId: parseInt(updatedData.priority),
-            assignedBy: loggedInUser,
-          };
+          const payload = isAdmin
+            ? {
+                statusId: parseInt(statusId),
+                priorityId: parseInt(updatedData.priority),
+                assignedBy: loggedInUser,
+              }
+            : {
+                statusId: parseInt(statusId),
+                priorityId: parseInt(originalFormData.priority),
+                assignedBy: loggedInUser,
+              };
           console.log('Update status/priority payload:', payload);
           const response = await axiosInstance.put(`/tickets/${ticketId}/updateStatusAndPriority`, payload);
-
-          // Update the ticket state with the new status and priority
           setTickets((prevTickets) =>
             prevTickets.map((ticket) =>
               ticket.id === ticketId
@@ -367,6 +407,17 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
     }
   };
 
+  const handleOpenModal = (fileUrls, ticketId) => {
+    console.log(`Opening modal for ticket ${ticketId} with fileUrls:`, fileUrls);
+    setSelectedImages(fileUrls);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedImages([]);
+  };
+
   const paginatedData = filteredTickets.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
@@ -399,13 +450,32 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
     width: '100%',
   };
 
+  const selectStyles = {
+    padding: '8px',
+    border: '1px solid #dfe1e6',
+    borderRadius: '4px',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    color: '#172b4d',
+    width: '20%',
+  };
+
   const inputStyle = {
-    padding: '6px',
+    padding: '7px',
     border: '1px solid #dfe1e6',
     borderRadius: '4px',
     fontSize: '14px',
     color: '#172b4d',
-    width: '150px',
+    width: '160px',
+  };
+
+  const inputStylefortitle = {
+    padding: '7px',
+    border: '1px solid rgb(209, 210, 214)',
+    borderRadius: '4px',
+    fontSize: '14px',
+    color: '#172b4d',
+    width: '250px',
   };
 
   const tableContainerStyle = {
@@ -431,6 +501,11 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
     textAlign: 'center',
   };
 
+  const titleCellStyle = {
+    ...cellStyle,
+    textAlign: 'left', // Override textAlign for Title column
+  };
+
   const headerCellStyle = {
     backgroundColor: '#8B3A94',
     border: '1px solid #dfe1e6',
@@ -442,6 +517,30 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
     cursor: 'pointer',
   };
 
+  const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '80%',
+    maxWidth: '600px',
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    padding: '16px',
+    maxHeight: '80vh',
+    overflowY: 'auto',
+  };
+
+  const imageStyle = {
+    maxWidth: '100%',
+    maxHeight: '400px',
+    objectFit: 'contain',
+    margin: '10px 0',
+    display: 'block',
+    borderRadius: '4px',
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', marginTop: '60px', marginLeft: '250px' }}>
       <div style={headerStyle}>My Tickets</div>
@@ -451,14 +550,14 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by title or description"
+          placeholder="Search..."
           style={inputStyle}
         />
-        <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#172b4d' }}>Filter by Status:</label>
+        <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#172b4d', marginLeft: '300px' }}>Filter by Status:</label>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          style={selectStyle}
+          style={selectStyles}
         >
           <option value="all">All</option>
           {statuses.map((status) => (
@@ -472,7 +571,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
         <table style={tableStyle}>
           <thead>
             <tr style={{ backgroundColor: '#f4f5f7' }}>
-              {['Sr No', 'Ticket Code', 'Priority', 'Title', 'Description', 'Assigned To', 'Status', 'Created At'].map(
+              {['Sr No', 'Ticket Code', 'Priority', 'Title', 'Description', 'Assigned To', 'Status', 'Created At', 'Company', 'SLA', 'Uploads'].map(
                 (header, idx) => (
                   <th
                     key={idx}
@@ -490,119 +589,140 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ ...cellStyle, textAlign: 'center' }}>
+                <td colSpan={11} style={{ ...cellStyle, textAlign: 'center' }}>
                   No Data Available
                 </td>
               </tr>
             ) : (
-              paginatedData.map((ticket, idx) => (
-                <tr
-                  key={idx}
-                  style={{ fontWeight: 'bold', pointerEvents: isLoading ? 'none' : 'auto' }}
-                  onClick={() => handleRowClick(ticket)}
-                >
-                  <td style={cellStyle}>{ticket.srNo}</td>
-                  <td style={cellStyle}>{ticket.ticketCode}</td>
-                  <td style={cellStyle}>
-                    {editingTicketId === ticket.id ? (
-                      <select
-                        name="priority"
-                        value={editFormData.priority}
-                        onChange={(e) => handleSelectChange(e, ticket.id)}
-                        style={selectStyle}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <option value="" disabled>
-                          Select Priority
-                        </option>
-                        {priorities.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
+              paginatedData.map((ticket, idx) => {
+                console.log(`Rendering ticket ${ticket.id} fileUrls:`, ticket.fileUrls);
+                return (
+                  <tr
+                    key={idx}
+                    style={{ fontWeight: 'bold', pointerEvents: isLoading ? 'none' : 'auto' }}
+                    onClick={() => handleRowClick(ticket)}
+                  >
+                    <td style={cellStyle}>{ticket.srNo}</td>
+                    <td style={cellStyle}>{ticket.ticketCode}</td>
+                    <td style={cellStyle}>
+                      {editingTicketId === ticket.id && isAdmin ? (
+                        <select
+                          name="priority"
+                          value={editFormData.priority}
+                          onChange={(e) => handleSelectChange(e, ticket.id)}
+                          style={selectStyle}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="" disabled>
+                            Select Priority
                           </option>
-                        ))}
-                      </select>
-                    ) : (
-                      ticket.priorityName
-                    )}
-                  </td>
-                  <td style={cellStyle}>
-                    {editingTicketId === ticket.id ? (
-                      <input
-                        type="text"
-                        name="title"
-                        value={editFormData.title}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => handleInputKeyDown(e, ticket.id)}
-                        style={inputStyle}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      ticket.title
-                    )}
-                  </td>
-                  <td style={cellStyle}>
-                    {editingTicketId === ticket.id ? (
-                      <input
-                        type="text"
-                        name="description"
-                        value={editFormData.description}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => handleInputKeyDown(e, ticket.id)}
-                        style={inputStyle}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      ticket.description?.slice(0, 20)
-                    )}
-                  </td>
-                  <td style={cellStyle}>
-                    {editingTicketId === ticket.id ? (
-                      <select
-                        name="assignedTo"
-                        value={editFormData.assignedTo}
-                        onChange={(e) => handleSelectChange(e, ticket.id)}
-                        style={selectStyle}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <option value="0" disabled>
-                          Select Assignee
-                        </option>
-                        {users.map((user) => (
-                          <option key={user.id} value={user.id}>
-                            {user.username}
+                          {priorities.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        ticket.priorityName
+                      )}
+                    </td>
+                    <td style={titleCellStyle}>
+                      {editingTicketId === ticket.id && isAdmin ? (
+                        <input
+                          type="text"
+                          name="title"
+                          value={editFormData.title}
+                          onChange={handleInputChange}
+                          onKeyDown={(e) => handleInputKeyDown(e, ticket.id)}
+                          style={inputStylefortitle}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        ticket.title.slice(0,20)
+                      )}
+                    </td>
+                    <td style={titleCellStyle}>
+                      {editingTicketId === ticket.id && isAdmin ? (
+                        <input
+                          type="text"
+                          name="description"
+                          value={editFormData.description}
+                          onChange={handleInputChange}
+                          onKeyDown={(e) => handleInputKeyDown(e, ticket.id)}
+                          style={inputStyle}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        ticket.description?.slice(0, 20)
+                      )}
+                    </td>
+                    <td style={cellStyle}>
+                      {editingTicketId === ticket.id && isAdmin ? (
+                        <select
+                          name="assignedTo"
+                          value={editFormData.assignedTo}
+                          onChange={(e) => handleSelectChange(e, ticket.id)}
+                          style={selectStyle}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="0" disabled>
+                            Select Assignee
                           </option>
-                        ))}
-                      </select>
-                    ) : (
-                      users.find((user) => user.id === parseInt(ticket.assignedTo))?.username ||
-                      'Unassigned'
-                    )}
-                  </td>
-                  <td style={cellStyle}>
-                    {editingTicketId === ticket.id ? (
-                      <select
-                        name="status"
-                        value={editFormData.status}
-                        onChange={(e) => handleSelectChange(e, ticket.id)}
-                        style={selectStyle}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <option value="" disabled>
-                          Select Status
-                        </option>
-                        {statuses.map((status) => (
-                          <option key={status.id} value={status.statusName}>
-                            {status.statusName}
+                          {users.map((user) => (
+                            <option key={user.id} value={user.id}>
+                              {user.username}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        users.find((user) => user.id === parseInt(ticket.assignedTo))?.username ||
+                        'Unassigned'
+                      )}
+                    </td>
+                    <td style={cellStyle}>
+                      {editingTicketId === ticket.id && canChangeStatus ? (
+                        <select
+                          name="status"
+                          value={editFormData.status}
+                          onChange={(e) => handleSelectChange(e, ticket.id)}
+                          style={selectStyle}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="" disabled>
+                            Select Status
                           </option>
-                        ))}
-                      </select>
-                    ) : (
-                      ticket.status
-                    )}
-                  </td>
-                  <td style={cellStyle}>{ticket.createdAt}</td>
-                </tr>
-              ))
+                          {statuses.map((status) => (
+                            <option key={status.id} value={status.statusName}>
+                              {status.statusName}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        ticket.status
+                      )}
+                    </td>
+                    <td style={cellStyle}>{ticket.createdAt}</td>
+                    <td style={cellStyle}>{ticket.company}</td>
+                    <td style={cellStyle}>{ticket.suggestedSLA}</td>
+                    <td style={cellStyle}>
+                      {Array.isArray(ticket.fileUrls) && ticket.fileUrls.length > 0 ? (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenModal(ticket.fileUrls, ticket.id);
+                          }}
+                          disabled={isLoading}
+                        >
+                          <ImageIcon sx={{ fontSize: '1rem', color: '#172b4d' }} />
+                        </IconButton>
+                      ) : (
+                        'NA'
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -643,6 +763,37 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
           {'>'}
         </button>
       </div>
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="image-modal-title"
+        aria-describedby="image-modal-description"
+      >
+        <Box sx={modalStyle}>
+          <IconButton
+            onClick={handleCloseModal}
+            style={{ position: 'absolute', top: '8px', right: '8px' }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <h2 style={{ textAlign: 'center', color: '#172b4d', marginBottom: '16px' }}>
+            Ticket Attachments
+          </h2>
+          {selectedImages.length > 0 ? (
+            selectedImages.map((url, index) => (
+              <img
+                key={index}
+                src={`http://195.250.30.1:8086${url}`}
+                alt={`Attachment ${index + 1}`}
+                style={imageStyle}
+                onError={(e) => { e.target.src = '/path/to/fallback-image.png'; }}
+              />
+            ))
+          ) : (
+            <p style={{ textAlign: 'center', color: '#172b4d' }}>No images available.</p>
+          )}
+        </Box>
+      </Modal>
       {isLoading && (
         <div
           style={{
@@ -670,7 +821,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
             color: #ffffff;
             background-color: #0052cc;
             border: none;
-            border-radius: 4px;
+            borderRadius: 4px;
             cursor: pointer;
             margin-right: 10px;
           }
@@ -681,7 +832,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
             color: #172b4d;
             background-color: #d3d3d3;
             border: none;
-            border-radius: 4px;
+            borderRadius: 4px;
             cursor: pointer;
           }
         `}
@@ -691,4 +842,3 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
 };
 
 export default TicketTable;
-

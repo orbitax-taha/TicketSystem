@@ -14,11 +14,11 @@ const Dashboard = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [priorities, setPriorities] = useState([]);
   const [users, setUsers] = useState([]);
-
+  const userName = localStorage.getItem('username') || 'admin';
   const fetchTickets = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get('/tickets');
+      const response = await axiosInstance.get(`/tickets/assignee/username/${userName}`);
       const ticketData = response.data.data || [];
       const transformedTickets = ticketData.map((ticket) => ({
         type: 'Request',

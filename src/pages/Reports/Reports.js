@@ -121,7 +121,7 @@ const Reports = ({ setCurrentPage, logout }) => {
       datasets: [
         {
           label: 'Ticket Status',
-          data: data.length ? data : [1],
+          data: data.length ? data : [0],
           backgroundColor: labels.length ? backgroundColors.slice(0, labels.length) : ['#dfe1e6'],
           borderColor: '#fff',
           borderWidth: 2,
@@ -228,7 +228,7 @@ const Reports = ({ setCurrentPage, logout }) => {
       },
       title: {
         display: true,
-        text: "This Week's Ticket Status (June 16 - June 22, 2025)",
+        text: "Weekly Status",
         font: { size: 16, family: 'Arial', weight: 'bold' },
         color: '#172b4d',
         padding: { top: 10, bottom: 20 },
@@ -251,7 +251,7 @@ const Reports = ({ setCurrentPage, logout }) => {
       },
       title: {
         display: true,
-        text: 'Daily Ticket Count (June 16 - June 22, 2025)',
+        text: 'Daily Ticket Count',
         font: { size: 16, family: 'Arial', weight: 'bold' },
         color: '#172b4d',
         padding: { top: 10, bottom: 20 },

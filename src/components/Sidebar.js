@@ -13,7 +13,7 @@ const Sidebar = () => {
 
   const location = useLocation(); // Get current route
   const loggedInUser = localStorage.getItem('username') || 'Guest'; // Get logged-in user's name
-
+const loggedInRole = localStorage.getItem('role') || ''; 
   const toggleSection = (section) => {
     setOpenSections((prev) => ({
       ...prev,
@@ -116,6 +116,7 @@ const Sidebar = () => {
   };
 
   const userRoleStyle = {
+    marginTop:'5px',
     fontSize: '12px',
     color: '#5e6c84',
   };
@@ -148,7 +149,7 @@ const Sidebar = () => {
         <div style={userLogoStyle} className="user-logo">{loggedInUser.charAt(0).toUpperCase()}</div>
         <div style={userInfoStyle}>
           <div style={userNameStyle}>{loggedInUser}</div>
-          <div style={userRoleStyle}>Admin</div>
+          <div style={userRoleStyle}>{loggedInRole} </div>
         </div>
       </div>
       {['projects', 'operations', 'reports'].map((section) => (

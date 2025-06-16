@@ -1,44 +1,3 @@
-// import React, { useState } from 'react';
-// import Sidebar from '../../components/Sidebar';
-// import Header from '../../components/Header';
-// import CreateTicket from '../../components/CreateTicket';
-
-// const Queues = ({ setCurrentPage }) => {
-//   const [showTicketForm, setShowTicketForm] = useState(false);
-
-//   const handleCreateTicket = (newTicket) => {
-//     // Since this page is for upcoming features, we won't handle ticket creation logic here
-//     // But we'll keep the function to maintain consistency with CreateTicket component
-//     setShowTicketForm(false);
-//   };
-
-//   return (
-//     <div style={{ display: 'flex' }}>
-//       <Sidebar setCurrentPage={setCurrentPage} currentPage="queues" />
-//       <div style={{ flex: 1 }}>
-//         <Header setShowTicketForm={setShowTicketForm} />
-//         <div style={{ 
-//           padding: '20px', 
-//           textAlign: 'center', 
-//           color: '#172b4d',
-//           marginTop: '60px' // To account for the fixed header
-//         }}>
-//           <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' ,marginLeft:"250px"}}>
-//             Upcoming Features
-//           </h2>
-//           <p style={{ fontSize: '16px', color: '#5e6c84' , marginLeft:"250px"}}>
-//             This section is under development. Stay tuned for exciting updates!
-//           </p>
-//         </div>
-//         {showTicketForm && (
-//           <CreateTicket onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Queues;
 
 // import React, { useState, useEffect } from 'react';
 // import Sidebar from '../../components/Sidebar';
@@ -78,7 +37,6 @@
 
 // const Queues = ({ setCurrentPage, logout }) => {
 //   const [tasks, setTasks] = useState(() => {
-//     // Load tasks from localStorage on mount, fallback to initialTasks
 //     const savedTasks = localStorage.getItem('tasks');
 //     return savedTasks ? JSON.parse(savedTasks) : initialTasks;
 //   });
@@ -111,6 +69,11 @@
 //     setTasks(updatedTasks);
 //   };
 
+//   const handleDeleteTask = (id) => {
+//     const updatedTasks = tasks.filter((task) => task.id !== id);
+//     setTasks(updatedTasks);
+//   };
+
 //   const renderColumn = (title, statusKey) => (
 //     <div style={styles.column}>
 //       <h4 style={styles.columnTitle}>
@@ -121,7 +84,16 @@
 //         .map((task) => (
 //           <div style={styles.card} key={task.id}>
 //             <div style={styles.cardTitle}>{task.title}</div>
-//             <div style={styles.tag}>(SAMPLE) {task.tag}</div>
+//             <div style={styles.tagContainer}>
+//               <div style={styles.tag}>(SAMPLE) {task.tag}</div>
+//               <button
+//                 style={styles.deleteButton}
+//                 onClick={() => handleDeleteTask(task.id)}
+//                 title="Delete Task"
+//               >
+//                 🗑️
+//               </button>
+//             </div>
 //             <div style={styles.datetime}>{task.datetime}</div>
 //             <select
 //               style={styles.dropdown}
@@ -137,14 +109,12 @@
 //     </div>
 //   );
 
-
-
 //   const handleCreateTicket = (newTicket) => {
 //     setShowTicketForm(false);
 //   };
 
 //   return (
-//     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', marginTop:"70px" , marginLeft:"240px"}}>
+//     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', marginTop: '70px', marginLeft: '240px' }}>
 //       <Header
 //         setCurrentPage={setCurrentPage}
 //         setShowTicketForm={() => {}}
@@ -194,12 +164,12 @@
 //   addTask: {
 //     display: 'flex',
 //     gap: '0.5rem',
-//     marginBottom: '1rem'
+//     marginBottom: '1rem',
 //   },
 //   input: {
 //     padding: '0.4rem',
 //     borderRadius: '4px',
-//     border: '1px solid #ccc'
+//     border: '1px solid #ccc',
 //   },
 //   button: {
 //     padding: '0.4rem 1rem',
@@ -208,7 +178,7 @@
 //     border: 'none',
 //     borderRadius: '4px',
 //     cursor: 'pointer',
-//     fontWeight: 'bold'
+//     fontWeight: 'bold',
 //   },
 //   boardWrapper: {
 //     overflowX: 'auto',
@@ -239,13 +209,13 @@
 //     marginBottom: '0.75rem',
 //     display: 'flex',
 //     alignItems: 'center',
-//     justifyContent: 'space-between'
+//     justifyContent: 'space-between',
 //   },
 //   count: {
 //     background: '#dee2e6',
 //     borderRadius: '50%',
 //     padding: '2px 6px',
-//     fontSize: '11px'
+//     fontSize: '11px',
 //   },
 //   card: {
 //     background: 'white',
@@ -260,7 +230,13 @@
 //   cardTitle: {
 //     fontWeight: 'bold',
 //     fontSize: '14px',
-//     marginBottom: '0.5rem'
+//     marginBottom: '0.5rem',
+//   },
+//   tagContainer: {
+//     display: 'flex',
+//     alignItems: 'center',
+//     gap: '0.5rem',
+//     marginBottom: '6px',
 //   },
 //   tag: {
 //     display: 'inline-block',
@@ -270,12 +246,25 @@
 //     fontWeight: 600,
 //     padding: '2px 8px',
 //     borderRadius: '4px',
-//     marginBottom: '6px'
+//   },
+//   deleteButton: {
+    
+//     background: '#e6c5f3',
+//     color: '#7e3aab',
+//     // color: 'black',
+//     border: 'none',
+//     borderRadius: '4px',
+//     padding: '2px 6px',
+//     fontSize: '12px',
+//     cursor: 'pointer',
+//     display: 'flex',
+//     alignItems: 'center',
+//     justifyContent: 'center',
 //   },
 //   datetime: {
 //     fontSize: '11px',
 //     color: '#888',
-//     marginBottom: '8px'
+//     marginBottom: '8px',
 //   },
 //   dropdown: {
 //     width: '100%',
@@ -283,17 +272,19 @@
 //     fontSize: '12px',
 //     borderRadius: '4px',
 //     border: '1px solid #ccc',
-//     backgroundColor: '#f1f1f1'
-//   }
+//     backgroundColor: '#f1f1f1',
+//   },
 // };
 
-// export default Queues;
 
+// export default Queues;
 
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import CreateTicket from '../../components/CreateTicket';
+import axiosInstance from '../../api/axiosInstance';
+import Swal from 'sweetalert2';
 
 const initialTasks = [
   {
@@ -334,8 +325,44 @@ const Queues = ({ setCurrentPage, logout }) => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTag, setNewTaskTag] = useState('BACKEND BUGS');
   const [showTicketForm, setShowTicketForm] = useState(false);
+  const [priorities, setPriorities] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  // Save tasks to localStorage whenever tasks change
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const prioritiesResponse = await axiosInstance.get('/priorities');
+        const normalizedPriorities = (prioritiesResponse.data || []).map((p) => ({
+          id: p.id,
+          name: p.name.replace('Heigh', 'High'),
+        }));
+        setPriorities(normalizedPriorities);
+
+        const usersResponse = await axiosInstance.get('/users');
+        setUsers(usersResponse.data || []);
+      } catch (error) {
+        console.error('Error fetching data:', error.response?.data || error.message);
+        Swal.fire({
+          title: 'Error',
+          icon: 'error',
+          text: 'Failed to load priorities or users.',
+        });
+        setPriorities([
+          { id: 1, name: 'Low' },
+          { id: 2, name: 'Medium' },
+          { id: 3, name: 'High' },
+          { id: 4, name: 'Very High' },
+        ]);
+        setUsers([
+          { id: 1, username: 'admin' },
+          { id: 2, username: 'user1' },
+        ]);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
@@ -402,6 +429,14 @@ const Queues = ({ setCurrentPage, logout }) => {
 
   const handleCreateTicket = (newTicket) => {
     setShowTicketForm(false);
+    const newTask = {
+      id: tasks.length + 1,
+      title: newTicket.title,
+      tag: 'TICKET',
+      status: 'todo',
+      datetime: new Date().toLocaleString(),
+    };
+    setTasks([...tasks, newTask]);
   };
 
   return (
@@ -410,10 +445,14 @@ const Queues = ({ setCurrentPage, logout }) => {
         setCurrentPage={setCurrentPage}
         setShowTicketForm={() => {}}
         logout={logout}
+        currentPage="queues"
       />
       <Sidebar setCurrentPage={setCurrentPage} currentPage="queues" />
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <Header setShowTicketForm={setShowTicketForm} />
+        <Header
+          setShowTicketForm={setShowTicketForm}
+          currentPage="queues"
+        />
         <div style={{ padding: '1rem', fontFamily: 'Arial, sans-serif' }}>
           <div style={styles.addTask}>
             <input
@@ -444,7 +483,12 @@ const Queues = ({ setCurrentPage, logout }) => {
           </div>
         </div>
         {showTicketForm && (
-          <CreateTicket onClose={() => setShowTicketForm(false)} onCreate={handleCreateTicket} />
+          <CreateTicket
+            onClose={() => setShowTicketForm(false)}
+            onCreate={handleCreateTicket}
+            priorities={priorities}
+            users={users}
+          />
         )}
       </div>
     </div>
@@ -539,10 +583,8 @@ const styles = {
     borderRadius: '4px',
   },
   deleteButton: {
-    
     background: '#e6c5f3',
     color: '#7e3aab',
-    // color: 'black',
     border: 'none',
     borderRadius: '4px',
     padding: '2px 6px',
