@@ -309,7 +309,7 @@ const CreateTicket = ({ onClose, onCreate, priorities, users }) => {
             onChange={(e) => setSkipFiles(e.target.checked)}
             disabled={isLoading}
           />
-          Skip file uploads (for testing)
+          Skip file uploads
         </label>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '15px' }}>
           <button

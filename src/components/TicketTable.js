@@ -25,7 +25,12 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
       updatedTickets = updatedTickets.filter(
         (ticket) =>
           ticket.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          ticket.description?.toLowerCase().includes(searchQuery.toLowerCase())
+          ticket.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           ticket.ticketCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               ticket.priorityName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                ticket.assignedToDep?.toLowerCase().includes(searchQuery.toLowerCase()) 
+
+
       );
     }
 

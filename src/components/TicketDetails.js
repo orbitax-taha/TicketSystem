@@ -369,21 +369,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
             <div style={labelStyle}>Created</div>
             <div style={valueStyle}>{ticket.createdAt || 'N/A'}</div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              {/* <button
-                style={{ ...buttonStyle, backgroundColor: '#0052cc' }}
-                onClick={() => setIsEditing(true)}
-                disabled={isLoading}
-              >
-                Edit
-              </button> */}
-              {/* <button
-                style={isLoading ? disabledButtonStyle : { ...buttonStyle, backgroundColor: '#de350b' }}
-                onClick={handleDelete}
-                disabled={isLoading}
-              >
-                {isLoading && <CircularProgress size={20} color="inherit" />}
-                {isLoading ? 'Deleting...' : 'Delete'}
-              </button> */}
+    
               <button
                 style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }}
                 onClick={onClose}
