@@ -437,7 +437,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
             <div style={labelStyle}>Created</div>
             <div style={valueStyle}>{ticket.createdAt || 'N/A'}</div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              {(isAdmin || canChangeStatus) && (
+              {/* {(isAdmin || canChangeStatus) && (
                 <button
                   style={{ ...buttonStyle, backgroundColor: '#0052cc' }}
                   onClick={() => setIsEditing(true)}
@@ -454,7 +454,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
                 >
                   Delete
                 </button>
-              )}
+              )} */}
               <button
                 style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }}
                 onClick={onClose}

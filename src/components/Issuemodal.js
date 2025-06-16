@@ -346,7 +346,7 @@ import axiosInstance from '../api/axiosInstance';
 const IssueModal = ({ onClose, ticketId }) => {
   const [ticketData, setTicketData] = useState(null);
   const [activeTab, setActiveTab] = useState('Comments');
-  const [showEditor, setShowEditor] = useState(false);
+  const [showEditor, setShowEditor] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [userInitials, setUserInitials] = useState('');
 
@@ -518,7 +518,7 @@ const styles = {
     background: '#fff', cursor: 'pointer', fontSize: 12
   },
   textarea: {
-    width: '100%', height: 100, padding: 10, border: '1px solid #ccc',
+    width: '90%', height: 100, padding: 10, border: '1px solid #ccc',
     borderRadius: 4, resize: 'none'
   },
   buttonRow: { marginTop: 10, display: 'flex', gap: 10 },
