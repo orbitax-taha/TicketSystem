@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
@@ -70,14 +68,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
       return;
     }
 
-    // if (!formData.id || !formData.title || !formData.description || !formData.assignedTo || !formData.priority) {
-    //   Swal.fire({
-    //     title: 'Validation Error',
-    //     icon: 'error',
-    //     text: 'ID, Title, Description, Assignee, and Priority are required!',
-    //   });
-    //   return;
-    // }
+
 
     setIsLoading(true);
     try {
@@ -208,7 +199,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
     backgroundColor: '#ffffff',
     borderRadius: '8px',
     padding: '20px',
-    width: '600px',
+    width: '500px',
     maxHeight: '80vh',
     overflowY: 'auto',
   };
@@ -378,21 +369,21 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
             <div style={labelStyle}>Created</div>
             <div style={valueStyle}>{ticket.createdAt || 'N/A'}</div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
+              {/* <button
                 style={{ ...buttonStyle, backgroundColor: '#0052cc' }}
                 onClick={() => setIsEditing(true)}
                 disabled={isLoading}
               >
                 Edit
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 style={isLoading ? disabledButtonStyle : { ...buttonStyle, backgroundColor: '#de350b' }}
                 onClick={handleDelete}
                 disabled={isLoading}
               >
                 {isLoading && <CircularProgress size={20} color="inherit" />}
                 {isLoading ? 'Deleting...' : 'Delete'}
-              </button>
+              </button> */}
               <button
                 style={{ ...buttonStyle, backgroundColor: '#d3d3d3', color: '#172b4d' }}
                 onClick={onClose}

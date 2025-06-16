@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
@@ -132,7 +130,7 @@ const Dashboard = () => {
   const statusGradients = {
     OPEN: 'linear-gradient(135deg, #4CAF50, #81C784)',
     'IN_PROGRESS': 'linear-gradient(135deg, #2196F3, #64B5F6)',
-    'WAITING FOR SUPPORT': 'linear-gradient(135deg, #FFC107, #FFD54F)',
+    'WAITING_SUPPORT': 'linear-gradient(135deg, #FFC107, #FFD54F)',
     'RESOLVED': 'linear-gradient(135deg, #F44336, #EF5350)',
     CLOSED: 'linear-gradient(135deg, #9C27B0, #AB47BC)',
   };
@@ -140,7 +138,7 @@ const Dashboard = () => {
   const statusColors = {
     OPEN: '#4CAF50',
     'IN_PROGRESS': '#2196F3',
-    'WAITING FOR SUPPORT': '#FFC107',
+    'WAITING_SUPPORT': '#FFC107',
     'RESOLVED': '#F44336',
     CLOSED: '#9C27B0',
   };
@@ -156,7 +154,7 @@ const Dashboard = () => {
         <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 14l-4-4h8l-4 4z" />
       </svg>
     ),
-    'WAITING FOR SUPPORT': (
+    'WAITING_SUPPORT': (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
         <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
       </svg>
@@ -281,7 +279,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  const statusList = ['OPEN', 'IN_PROGRESS', 'WAITING FOR SUPPORT', 'RESOLVED', 'CLOSED'];
+  const statusList = ['OPEN', 'IN_PROGRESS', 'WAITING_SUPPORT', 'RESOLVED', 'CLOSED'];
 
   return (
     <div style={{ display: 'flex', width: '100%', overflowX: 'hidden' , marginLeft:"25px"}}>

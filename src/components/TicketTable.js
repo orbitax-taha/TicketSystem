@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
@@ -167,7 +164,8 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
             status: editFormData.status,
           };
           console.log('Update ticket payload:', payload);
-          const response = await axiosInstance.put(`/tickets/${ticketId}`, payload);
+          // const response = await axiosInstance.put(`/tickets/${ticketId}`, payload);
+           const response = await axiosInstance.put(`/tickets/${ticketId}/updateTicket`, payload);
           setTickets((prevTickets) =>
             prevTickets.map((ticket) =>
               ticket.id === ticketId
@@ -309,7 +307,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
             assignedBy: loggedInUser,
           };
           console.log('Update status/priority payload:', payload);
-          const response = await axiosInstance.put(`/tickets/${ticketId}/updatestatuspriority`, payload);
+          const response = await axiosInstance.put(`/tickets/${ticketId}/updateStatusAndPriority`, payload);
 
           // Update the ticket state with the new status and priority
           setTickets((prevTickets) =>
@@ -402,7 +400,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
     borderRadius: '4px',
     fontSize: '14px',
     color: '#172b4d',
-    width: '600px',
+    width: '150px',
   };
 
   const tableContainerStyle = {
