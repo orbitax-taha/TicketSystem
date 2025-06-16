@@ -1,24 +1,25 @@
 
-
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar'; // Fixed incorrect import
+import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import TicketTable from '../../components/TicketTable';
 import TicketDetails from '../../components/TicketDetails';
-import CreateTicket from '../../components/CreateTicket'; // Corrected path and syntax
+import CreateTicket from '../../components/CreateTicket';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import Swal from 'sweetalert2';
 import axiosInstance from '../../api/axiosInstance';
 
 const MyTickets = () => {
   const [tickets, setTickets] = useState([]);
-  const [selectedTickets] = useState([]); // unused, can be removed
-  const [selectedTicket, setSelectedTicket] = useState(null); // Added
+  const [selectedTickets] = useState([]); // Note: Unused, consider removing
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [showTicketForm, setShowTicketForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [priorities, setPriorities] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [users, setUsers] = useState([]);
+
+  const userName = localStorage.getItem('username') || 'admin';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +37,7 @@ const MyTickets = () => {
         const usersResponse = await axiosInstance.get('/users');
         setUsers(usersResponse.data || []);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error.response?.data || error.message);
         Swal.fire({
           title: 'Error',
           icon: 'error',
@@ -52,7 +53,7 @@ const MyTickets = () => {
   const fetchTickets = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get('/tickets');
+      const response = await axiosInstance.get(`/tickets/assignee/username/${userName}`);
       const ticketData = response.data.data || [];
       const transformedTickets = ticketData.map((ticket, index) => ({
         srNo: index + 1,
@@ -63,7 +64,7 @@ const MyTickets = () => {
         assignedTo: ticket.assignedTo?.toString() || '0',
         status: ticket.status || 'OPEN',
         priority: ticket.priorityId?.toString() || '',
-        priorityName: ticket.priorityName ,
+        priorityName: ticket.priorityName || 'Not set',
         createdAt: new Date(ticket.createdAt).toLocaleString('en-GB', {
           day: '2-digit',
           month: '2-digit',
@@ -76,11 +77,11 @@ const MyTickets = () => {
       }));
       setTickets(transformedTickets);
     } catch (error) {
-      console.error('Fetch tickets error:', error);
+      console.error('Fetch tickets error:', error.response?.data || error.message);
       Swal.fire({
         title: 'Error Fetching Tickets',
         icon: 'error',
-        text: error.response?.data?.message || 'Failed to fetch tickets',
+        text: error.response?.data?.message || 'Failed to fetch tickets for the user.',
       });
       setTickets([]);
     } finally {
@@ -89,7 +90,6 @@ const MyTickets = () => {
   };
 
   const handleCreateTicket = (newTicket) => {
-  //  const priorityName = priorities.find((p) => p.id === newTicket.priorityId)?.name || 'Not set';
     const transformedTicket = {
       srNo: tickets.length + 1,
       ticketCode: newTicket.ticketCode,
@@ -99,7 +99,7 @@ const MyTickets = () => {
       assignedTo: newTicket.assignedTo?.toString() || '0',
       status: newTicket.status || 'OPEN',
       priority: newTicket.priorityId?.toString() || '',
-      priorityName: newTicket.priorityName,
+      priorityName: newTicket.priorityName || 'Not set',
       createdAt: new Date(newTicket.createdAt || Date.now()).toLocaleString('en-GB', {
         day: '2-digit',
         month: '2-digit',

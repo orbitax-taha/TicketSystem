@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axiosInstance from '../api/axiosInstance';
@@ -208,7 +206,7 @@ const TicketDetails = ({ ticket, onClose, priorities, users }) => {
     backgroundColor: '#ffffff',
     borderRadius: '8px',
     padding: '20px',
-    width: '600px',
+    width: '100px',
     maxHeight: '80vh',
     overflowY: 'auto',
   };
