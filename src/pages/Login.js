@@ -211,13 +211,13 @@ const Login = () => {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('username', username);
       localStorage.setItem('role', response.data.role || 'user'); // Store role
-      Swal.fire({
-        title: 'Success',
-        icon: 'success',
-        text: 'Login successful!',
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      // Swal.fire({
+      //   title: 'Success',
+      //   icon: 'success',
+      //   text: 'Login successful!',
+      //   timer: 1500,
+      //   showConfirmButton: false,
+      // });
       navigate('/my-tickets');
     } catch (error) {
       if (error.response?.status === 401) {

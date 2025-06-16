@@ -65,14 +65,14 @@ const CreateTicket = ({ onClose, onCreate, priorities, users }) => {
 
     if (!formData.title.trim()) {
       errors.push('Title is required.');
-    } else if (formData.title.trim().length < 5) {
-      errors.push('Title must be at least 5 characters long.');
+    // } else if (formData.title.trim().length < 5) {
+    //   errors.push('Title must be at least 5 characters long.');
     }
 
     if (!formData.description.trim()) {
       errors.push('Description is required.');
-    } else if (formData.description.trim().length < 10) {
-      errors.push('Description must be at least 10 characters long.');
+    // } else if (formData.description.trim().length < 10) {
+    //   errors.push('Description must be at least 10 characters long.');
     }
 
     if (!formData.assignedTo) {

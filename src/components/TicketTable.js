@@ -427,7 +427,7 @@ const TicketTable = ({ tickets = [], setTickets, refetchTickets, priorities, sta
   };
 
   const headerCellStyle = {
-    backgroundColor: '#0052cc',
+    backgroundColor: '#8B3A94',
     border: '1px solid #dfe1e6',
     padding: '8px',
     whiteSpace: 'nowrap',

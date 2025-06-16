@@ -23,7 +23,7 @@ const Header = ({ setShowTicketForm }) => {
             left: 210px;
             right: 0;
             height: 60px;
-            background: linear-gradient(to right, #0052cc, #003a8c);
+            background: linear-gradient(to right, purple, purple);
             color: white;
             display: flex;
             align-items: center;
@@ -54,7 +54,8 @@ const Header = ({ setShowTicketForm }) => {
             transform: scale(1.1);
           }
           .create-button {
-            padding: 7px 13px;
+            margin-Left : 10px;
+            padding: 7px 22px;
             border-radius: 4px;
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
@@ -114,13 +115,13 @@ const Header = ({ setShowTicketForm }) => {
         <div className="header-left">
           <div className="header-logo">OTS</div>
           <nav className="header-nav">
-            {['Your Work', 'Projects', 'Filters', 'Dashboards'].map((item) => (
+            {/* {['Your Work', 'Projects', 'Filters', 'Dashboards'].map((item) => (
               <div key={item} className="nav-item">
                 {item}
               </div>
-            ))}
+            ))} */}
             <div className="create-button" onClick={() => setShowTicketForm(true)}>
-              Create
+              Create Ticket
             </div>
           </nav>
         </div>

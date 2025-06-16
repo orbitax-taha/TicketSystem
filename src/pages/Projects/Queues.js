@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import CreateTicket from '../../components/CreateTicket';
@@ -35,10 +37,19 @@ const initialTasks = [
 ];
 
 const Queues = ({ setCurrentPage, logout }) => {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState(() => {
+    // Load tasks from localStorage on mount, fallback to initialTasks
+    const savedTasks = localStorage.getItem('tasks');
+    return savedTasks ? JSON.parse(savedTasks) : initialTasks;
+  });
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTag, setNewTaskTag] = useState('BACKEND BUGS');
   const [showTicketForm, setShowTicketForm] = useState(false);
+
+  // Save tasks to localStorage whenever tasks change
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   const handleAddTask = () => {
     if (!newTaskTitle.trim()) return;
@@ -150,7 +161,7 @@ const styles = {
   },
   button: {
     padding: '0.4rem 1rem',
-    backgroundColor: '#007bff',
+    backgroundColor: '#8B3A94',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
