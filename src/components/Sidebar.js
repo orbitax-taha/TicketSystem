@@ -334,7 +334,7 @@ const Sidebar = () => {
       { path: '/queues', label: 'Kanban', icon: <path d="M12 20V10M5 15l7-7 7 7M4 20h16" /> },
       // { path: '/incident', label: 'Incidents', icon: <><circle cx="12" cy="12" r="10" /><path d="M12 6v6h6" /></> },
       // { path: '/problems', label: 'Problems', icon: <path d="M12 2v20M2 12h20" /> },
-      { path: '/changes', label: 'Changes', icon: <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z" /> },
+      { path: '/changes', label: 'History', icon: <path d="M12 20h9M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z" /> },
     ],
     operations: [
       { path: '/alerts', label: 'Alerts', icon: <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12zM12 15a3 3 0 100-6 3 3 0 000 6z" /> },

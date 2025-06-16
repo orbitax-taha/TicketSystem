@@ -634,7 +634,7 @@ const Oncall = ({ logout }) => {
             style={{
               padding: '10px 20px',
               fontSize: '16px',
-              backgroundColor: '#007bff',
+              backgroundColor: '#8B3A94',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -669,7 +669,7 @@ const Oncall = ({ logout }) => {
             {/* Header */}
             <div
               style={{
-                backgroundColor: '#007bff',
+                backgroundColor: '#8B3A94',
                 padding: '12px 16px',
                 color: 'white',
                 fontWeight: 'bold',
@@ -773,7 +773,7 @@ const Oncall = ({ logout }) => {
               <button
                 onClick={handleSendMessage}
                 style={{
-                  backgroundColor: '#007bff',
+                  backgroundColor: '#8B3A94',
                   color: '#fff',
                   padding: '0 15px',
                   border: 'none',
